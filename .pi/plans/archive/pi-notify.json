@@ -1,0 +1,86 @@
+{
+  "title": "Pi Desktop Notification Extension",
+  "slug": "pi-notify",
+  "context": "Pi extension that sends GNOME desktop notifications via notify-send when agent_end fires and terminal is not focused. Uses CSI ? 1004 focus events for focus tracking. Ptyxis (VTE-based) terminal on Linux/GNOME.",
+  "architecture": "Two modules: focus-tracker (stdin focus event listener) and index.ts (extension glue + notify-send). Focus tracking enables terminal focus reporting via ESC[?1004h, listens for ESC[I (focus in) / ESC[O (focus out) on stdin. Extension hooks agent_end, checks focus state, spawns notify-send if unfocused.",
+  "created": "2026-04-28T20:26:14.360Z",
+  "updated": "2026-04-28T20:57:35.535Z",
+  "steps": [
+    {
+      "index": 1,
+      "name": "Focus tracker module",
+      "red": {
+        "description": "Write focus-tracker.test.ts with tests for: enableFocusTracking writes ESC[?1004h to stdout, disableFocusTracking writes ESC[?1004l, stdin ESC[I sets focused=true, stdin ESC[O sets focused=false, default state is focused=true, cleanup handler removes listener",
+        "status": "done"
+      },
+      "green": {
+        "description": "Implement focus-tracker.ts with enable/disable functions, stdin raw mode listener for focus events, isFocused() getter, cleanup() for teardown",
+        "status": "done"
+      },
+      "refactor": {
+        "description": "",
+        "status": "skipped"
+      },
+      "completed": true
+    },
+    {
+      "index": 2,
+      "name": "Notify helper module",
+      "red": {
+        "description": "Write notify.test.ts with tests for: spawns notify-send with title and body args, returns silently when notify-send binary not found (ENOENT), escapes body text for shell safety",
+        "status": "done"
+      },
+      "green": {
+        "description": "Implement notify.ts that uses spawnSync to call notify-send with --icon and title/body args, catches ENOENT gracefully",
+        "status": "done"
+      },
+      "refactor": {
+        "description": "",
+        "status": "skipped"
+      },
+      "completed": true
+    },
+    {
+      "index": 3,
+      "name": "Extension wiring with focus gating",
+      "red": {
+        "description": "Write index.test.ts with tests for: hooks agent_end event, calls notify when unfocused, skips notify when focused, includes turn count in notification body (\"Turn N complete\"), falls back to always-notify when focus tracking unavailable, hooks session_shutdown for cleanup",
+        "status": "done"
+      },
+      "green": {
+        "description": "Implement index.ts extension that imports focus-tracker and notify, hooks agent_end to check isFocused() and send notification with turn count from event.messages, hooks session_shutdown to call cleanup()",
+        "status": "done"
+      },
+      "refactor": {
+        "description": "Extract notification body formatting into a helper function",
+        "status": "done"
+      },
+      "completed": true
+    },
+    {
+      "index": 4,
+      "name": "Integration with pi extension API",
+      "red": {
+        "description": "Write integration.test.ts with tests for: extension loads without errors, registers agent_end handler via pi.on(), registers session_shutdown handler via pi.on()",
+        "status": "done"
+      },
+      "green": {
+        "description": "Verify extension calls pi.on for both events, no registerCommand/registerTool needed",
+        "status": "done"
+      },
+      "refactor": {
+        "description": "",
+        "status": "skipped"
+      },
+      "completed": true
+    }
+  ],
+  "notes": [],
+  "design": {
+    "currentState": "No desktop notification extension exists. Pi ships with an example notify.ts in examples/extensions/ that uses terminal escape codes (OSC 777/99) for notifications but has no focus gating. Extensions live in ~/.pi/agent/extensions/ as Bun workspace packages with bun:test for testing.",
+    "desiredState": "A new pi-notify extension in ~/.pi/agent/extensions/ that: (1) tracks terminal focus via CSI ?1004 focus events, (2) on agent_end, sends a GNOME desktop notification via notify-send with turn count context ONLY when terminal is not focused, (3) defaults to always-notify if focus events unsupported, (4) cleans up on session_shutdown.",
+    "patterns": "Integration tests: cheap-clarify/integration.test.ts pattern (mock pi API, verify registerCommand/on calls). Unit tests: co-located *.test.ts with bun:test. Package structure: index.ts + package.json + tsconfig.json extending tsconfig.base.json. Shared mocks from @pi-ext/shared/test-mocks. Workspace registration in root package.json.",
+    "decisions": "Use notify-send for GNOME notifications. Focus tracking via CSI ?1004h stdin listener. Default state = focused (conservative). Three modules: focus-tracker.ts (focus event listener), notify.ts (notify-send wrapper), index.ts (extension glue). Notification includes turn count. No session_start notification.",
+    "questions": "None — all resolved."
+  }
+}

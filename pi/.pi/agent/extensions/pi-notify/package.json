@@ -1,0 +1,15 @@
+{
+  "name": "@pi-ext/pi-notify",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "pi": {
+    "extensions": ["./index.ts"]
+  },
+  "dependencies": {
+    "@pi-ext/shared": "workspace:*"
+  },
+  "peerDependencies": {
+    "@mariozechner/pi-coding-agent": "^0.70.2"
+  }
+}

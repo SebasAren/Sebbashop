@@ -88,6 +88,16 @@
         "@pi-ext/shared": "workspace:*",
       },
     },
+    "pi-notify": {
+      "name": "@pi-ext/pi-notify",
+      "version": "1.0.0",
+      "dependencies": {
+        "@pi-ext/shared": "workspace:*",
+      },
+      "peerDependencies": {
+        "@mariozechner/pi-coding-agent": "^0.70.2",
+      },
+    },
     "plan-mode": {
       "name": "@pi-ext/plan-mode",
       "version": "1.0.0",
@@ -296,6 +306,8 @@
     "@pi-ext/fuzzy-edit": ["@pi-ext/fuzzy-edit@workspace:fuzzy-edit"],
 
     "@pi-ext/librarian": ["@pi-ext/librarian@workspace:librarian"],
+
+    "@pi-ext/pi-notify": ["@pi-ext/pi-notify@workspace:pi-notify"],
 
     "@pi-ext/plan-mode": ["@pi-ext/plan-mode@workspace:plan-mode"],
 
