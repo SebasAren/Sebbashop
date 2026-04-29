@@ -3,7 +3,7 @@ age = "latest"
 bun = "latest"
 claude = "latest"
 fnox = "latest"
-pi = "0.70.2"
+pi = "0.70.6"
 tree-sitter = "latest"
 uv = "latest"
 
