@@ -4,34 +4,23 @@ import { piCodingAgentMock, piTuiMock } from "@pi-ext/shared/test-mocks";
 mock.module("@mariozechner/pi-coding-agent", piCodingAgentMock);
 mock.module("@mariozechner/pi-tui", piTuiMock);
 
-// ── Mock focus-tracker ──────────────────────────────────────────
-
-const mockIsFocused = mock<() => boolean>().mockReturnValue(true);
-const mockEnableFocusTracking = mock<() => void>();
-const mockCleanup = mock<() => void>();
-
-mock.module("./focus-tracker", () => ({
-  isFocused: mockIsFocused,
-  enableFocusTracking: mockEnableFocusTracking,
-  cleanup: mockCleanup,
-}));
-
 // Import after mocks
 import ext from "./index";
-const mockNotify = mock<(title: string, body: string) => boolean>().mockReturnValue(true);
 
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 describe("pi-notify extension", () => {
   let events: Map<string, (...args: unknown[]) => void>;
   let pi: { on: ReturnType<typeof mock> };
+  let mockIsFocused: ReturnType<typeof mock>;
+  let mockEnableFocusTracking: ReturnType<typeof mock>;
+  let mockCleanup: ReturnType<typeof mock>;
+  const mockNotify = mock<(title: string, body: string) => boolean>().mockReturnValue(true);
 
   beforeEach(() => {
-    mockIsFocused.mockReset();
-    mockIsFocused.mockReturnValue(true);
-    mockEnableFocusTracking.mockReset();
-    mockEnableFocusTracking.mockImplementation(() => {});
-    mockCleanup.mockReset();
+    mockIsFocused = mock<() => boolean>().mockReturnValue(true);
+    mockEnableFocusTracking = mock<() => void>();
+    mockCleanup = mock<() => void>();
     mockNotify.mockReset();
     mockNotify.mockReturnValue(true);
 
@@ -44,23 +33,43 @@ describe("pi-notify extension", () => {
   });
 
   it("hooks agent_end event", () => {
-    ext(pi, { notify: mockNotify });
+    ext(pi, {
+      notify: mockNotify,
+      enableFocusTracking: mockEnableFocusTracking,
+      isFocused: mockIsFocused,
+      cleanup: mockCleanup,
+    });
     expect(events.has("agent_end")).toBe(true);
   });
 
   it("hooks session_shutdown event", () => {
-    ext(pi, { notify: mockNotify });
+    ext(pi, {
+      notify: mockNotify,
+      enableFocusTracking: mockEnableFocusTracking,
+      isFocused: mockIsFocused,
+      cleanup: mockCleanup,
+    });
     expect(events.has("session_shutdown")).toBe(true);
   });
 
   it("calls enableFocusTracking on initialization", () => {
-    ext(pi, { notify: mockNotify });
+    ext(pi, {
+      notify: mockNotify,
+      enableFocusTracking: mockEnableFocusTracking,
+      isFocused: mockIsFocused,
+      cleanup: mockCleanup,
+    });
     expect(mockEnableFocusTracking).toHaveBeenCalledTimes(1);
   });
 
   it("calls notify when unfocused on agent_end", () => {
     mockIsFocused.mockReturnValue(false);
-    ext(pi, { notify: mockNotify });
+    ext(pi, {
+      notify: mockNotify,
+      enableFocusTracking: mockEnableFocusTracking,
+      isFocused: mockIsFocused,
+      cleanup: mockCleanup,
+    });
 
     const handler = events.get("agent_end")!;
     handler({ type: "agent_end", messages: [] });
@@ -70,7 +79,12 @@ describe("pi-notify extension", () => {
 
   it("skips notify when focused on agent_end", () => {
     mockIsFocused.mockReturnValue(true);
-    ext(pi, { notify: mockNotify });
+    ext(pi, {
+      notify: mockNotify,
+      enableFocusTracking: mockEnableFocusTracking,
+      isFocused: mockIsFocused,
+      cleanup: mockCleanup,
+    });
 
     const handler = events.get("agent_end")!;
     handler({ type: "agent_end", messages: [] });
@@ -80,7 +94,12 @@ describe("pi-notify extension", () => {
 
   it("includes turn count in notification body ('Turn N complete')", () => {
     mockIsFocused.mockReturnValue(false);
-    ext(pi, { notify: mockNotify });
+    ext(pi, {
+      notify: mockNotify,
+      enableFocusTracking: mockEnableFocusTracking,
+      isFocused: mockIsFocused,
+      cleanup: mockCleanup,
+    });
 
     const messages = [{ role: "user" }, { role: "assistant" }, { role: "user" }];
     const handler = events.get("agent_end")!;
@@ -94,7 +113,12 @@ describe("pi-notify extension", () => {
 
   it("uses descriptive title in notification", () => {
     mockIsFocused.mockReturnValue(false);
-    ext(pi, { notify: mockNotify });
+    ext(pi, {
+      notify: mockNotify,
+      enableFocusTracking: mockEnableFocusTracking,
+      isFocused: mockIsFocused,
+      cleanup: mockCleanup,
+    });
 
     const handler = events.get("agent_end")!;
     handler({ type: "agent_end", messages: [] });
@@ -103,7 +127,12 @@ describe("pi-notify extension", () => {
   });
 
   it("calls cleanup on session_shutdown", () => {
-    ext(pi, { notify: mockNotify });
+    ext(pi, {
+      notify: mockNotify,
+      enableFocusTracking: mockEnableFocusTracking,
+      isFocused: mockIsFocused,
+      cleanup: mockCleanup,
+    });
 
     const handler = events.get("session_shutdown")!;
     handler({ type: "session_shutdown", reason: "quit" });
@@ -118,7 +147,12 @@ describe("pi-notify extension", () => {
     // isFocused is still the default mock returning true, but fallback
     // should ignore focus state and always notify
     mockIsFocused.mockReturnValue(true);
-    ext(pi, { notify: mockNotify });
+    ext(pi, {
+      notify: mockNotify,
+      enableFocusTracking: mockEnableFocusTracking,
+      isFocused: mockIsFocused,
+      cleanup: mockCleanup,
+    });
 
     const handler = events.get("agent_end")!;
     handler({ type: "agent_end", messages: [] });
@@ -129,7 +163,12 @@ describe("pi-notify extension", () => {
 
   it("turn count is 0 for empty messages", () => {
     mockIsFocused.mockReturnValue(false);
-    ext(pi, { notify: mockNotify });
+    ext(pi, {
+      notify: mockNotify,
+      enableFocusTracking: mockEnableFocusTracking,
+      isFocused: mockIsFocused,
+      cleanup: mockCleanup,
+    });
 
     const handler = events.get("agent_end")!;
     handler({ type: "agent_end", messages: [] });
@@ -141,7 +180,12 @@ describe("pi-notify extension", () => {
     mockEnableFocusTracking.mockImplementation(() => {
       throw new Error("stdin unavailable");
     });
-    ext(pi, { notify: mockNotify });
+    ext(pi, {
+      notify: mockNotify,
+      enableFocusTracking: mockEnableFocusTracking,
+      isFocused: mockIsFocused,
+      cleanup: mockCleanup,
+    });
 
     const handler = events.get("agent_end")!;
     expect(() => {
@@ -153,7 +197,12 @@ describe("pi-notify extension", () => {
     mockEnableFocusTracking.mockImplementation(() => {
       throw new Error("stdin unavailable");
     });
-    ext(pi, { notify: mockNotify });
+    ext(pi, {
+      notify: mockNotify,
+      enableFocusTracking: mockEnableFocusTracking,
+      isFocused: mockIsFocused,
+      cleanup: mockCleanup,
+    });
 
     const handler = events.get("session_shutdown")!;
     expect(() => {
