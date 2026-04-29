@@ -10,6 +10,6 @@
     "@pi-ext/shared": "workspace:*"
   },
   "peerDependencies": {
-    "@mariozechner/pi-coding-agent": "^0.70.2"
+    "@mariozechner/pi-coding-agent": "^0.70.6"
   }
 }
