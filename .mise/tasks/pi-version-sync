@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+#MISE description="Sync @mariozechner/pi-* npm ranges in extensions to a target version"
+set -euo pipefail
+
+target="${1:-}"
+if [ -z "$target" ]; then
+  echo "Usage: mise run pi-version-sync <version>"
+  echo "Example: mise run pi-version-sync 0.70.6"
+  exit 1
+fi
+
+# Validate semver format
+if ! echo "$target" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+  echo "ERROR: Invalid semver: $target"
+  exit 1
+fi
+
+new_range="^$target"
+extensions_root="pi/.pi/agent/extensions"
+
+# Use | as sed delimiter since keys contain /
+update_dep() {
+  local file=$1 key=$2 val=$3
+  sed -i "s|\"$key\": \"[^\"]*\"|\"$key\": \"$val\"|" "$file"
+}
+
+# Update root workspace package.json (dependencies + devDependencies)
+for key in "@mariozechner/pi-ai" "@mariozechner/pi-coding-agent" "@mariozechner/pi-tui" "@mariozechner/pi-agent-core"; do
+  update_dep "$extensions_root/package.json" "$key" "$new_range"
+done
+
+# Update individual extension peerDependencies
+for f in "$extensions_root"/shared/package.json "$extensions_root"/extract-share/package.json "$extensions_root"/pi-notify/package.json; do
+  for key in "@mariozechner/pi-coding-agent" "@mariozechner/pi-tui"; do
+    update_dep "$f" "$key" "$new_range"
+  done
+done
+
+echo "✓ Updated all @mariozechner/pi-* ranges to $new_range"
