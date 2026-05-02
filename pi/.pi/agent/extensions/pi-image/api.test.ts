@@ -119,7 +119,7 @@ describe("generateImageApi", () => {
     expect(requestBody.model).toBe("fast");
     expect(requestBody.messages[0].role).toBe("user");
     expect(requestBody.messages[0].content).toBe("a sunset");
-    expect(requestBody.modalities).toEqual(["image"]);
+    expect(requestBody.modalities).toEqual(["image", "text"]);
     expect(requestBody.image_config).toEqual({ aspect_ratio: "16:9" });
   });
 

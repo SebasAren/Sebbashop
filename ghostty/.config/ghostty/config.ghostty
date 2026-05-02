@@ -1,0 +1,65 @@
+# Ghostty configuration
+# Mirrors the WezTerm setup from wezterm/.config/wezterm/wezterm.lua
+# Theme, font, and behavior tuned for tmux + pi workflow.
+
+# ────────────────────────────────────────────
+# Theme & Appearance
+# ────────────────────────────────────────────
+theme = Catppuccin Mocha
+
+# ────────────────────────────────────────────
+# Font
+# ────────────────────────────────────────────
+font-family = JetBrains Mono
+font-size = 14
+
+# Ligatures (match WezTerm harfbuzz_features)
+font-feature = calt
+font-feature = clig
+font-feature = liga
+
+# ────────────────────────────────────────────
+# Window
+# ────────────────────────────────────────────
+# No native title bar — we use tmux for window management
+window-decoration = false
+
+# Padding (match WezTerm window_padding)
+window-padding-x = 4
+window-padding-y = 2
+
+# ────────────────────────────────────────────
+# Cursor
+# ────────────────────────────────────────────
+cursor-style = block
+cursor-style-blink = true
+
+# ────────────────────────────────────────────
+# Scrollback
+# ────────────────────────────────────────────
+# Ghostty uses scrollback-limit in bytes, not lines.
+# ~10MB ≈ 100,000 lines at 100 bytes/line.
+scrollback-limit = 10000000
+
+# ────────────────────────────────────────────
+# Shell Integration
+# ────────────────────────────────────────────
+# Let the shell profile handle tmux auto-start.
+shell-integration = detect
+
+# ────────────────────────────────────────────
+# Keybindings (complement tmux, don't clash)
+# ────────────────────────────────────────────
+# NOTE: ctrl+equal, ctrl+minus, ctrl+zero syntax causes
+# "unknown error error.InvalidFormat" in Ghostty 1.3.1.
+# These are left as defaults or use the menu instead.
+
+# Pi-required fix for Linux
+keybind = "alt+backspace=text:\x1b\x7f"
+
+# ────────────────────────────────────────────
+# Performance / Misc
+# ────────────────────────────────────────────
+# GPU-accelerated by default; no extra config needed.
+# Background opacity can be set if desired:
+# background-opacity = 1.0

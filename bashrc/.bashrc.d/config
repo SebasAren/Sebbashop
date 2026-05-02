@@ -1,5 +1,6 @@
 #!/bin/bash
 export EDITOR=nvim
+export PI_TMUX_IMAGES=1
 source ~/.bashenv
 
 # fzf key bindings (Ctrl+R history, Ctrl+T files, Alt+C cd)

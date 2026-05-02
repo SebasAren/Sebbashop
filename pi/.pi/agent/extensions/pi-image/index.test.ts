@@ -228,7 +228,7 @@ describe("pi-image extension", () => {
       expect(result.details.aspectRatio).toBe("1:1");
       // Default quality is "fast", model should be IMAGE_MODEL_FAST or its default
       expect(result.details.model).toBe(
-        process.env.IMAGE_MODEL_FAST || "bytedance-seed/seedream-4.5",
+        process.env.IMAGE_MODEL_FAST || "google/gemini-3.1-flash-image-preview",
       );
 
       savedFiles.push(result.details.path);
@@ -296,7 +296,7 @@ describe("pi-image extension", () => {
       );
 
       expect(result.details.model).toBe(
-        process.env.IMAGE_MODEL_BEST || "google/gemini-3.1-flash-image-preview",
+        process.env.IMAGE_MODEL_BEST || "google/gemini-3-pro-image-preview",
       );
 
       savedFiles.push(result.details.path);
