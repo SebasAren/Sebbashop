@@ -47,7 +47,7 @@ globs:
 ## Command-only extensions (fire-and-forget)
 
 - **When the operation is a bookmark, not a conversation topic** — skip tool registration entirely. Register a command (`pi.registerCommand`) that calls `runSubagent` directly inside `ctx.ui.custom()` with `BorderedLoader`. The parent model is never involved, saving a full round-trip of token processing.
-- **`ctx.ui.custom()` return contract**: The callback must **return** the component (`return loader`), and async work resolves via `.then(done)`. Forgetting the return is a compile error.
+- **`ctx.ui.custom()` with `{ overlay: true }` creates a focus-capturing modal, not inline content.** — Passive components (like raw `Image` from `pi-tui`) without a working `handleInput()` will freeze the terminal because the user cannot invoke `done()` to dismiss the overlay. For displaying images, return `{ type: "image", ... }` in the tool result content array instead — the framework renders it inline with proper protocol detection and fallback text, identical to the `read` tool.
 - **`ctx.ui.notify()` levels**: Only accepts `"error" | "warning" | "info"` — no `"success"` level exists.
 - **Double-token-cost anti-pattern**: `sendUserMessage` → parent model → tool → subagent processes conversation tokens twice with zero caching benefit. The serialized format differs from the cached prefix in the parent session (different content, different position), and the fresh subagent has no cache at all. For fire-and-forget operations, call `runSubagent` directly from the command handler instead.
 

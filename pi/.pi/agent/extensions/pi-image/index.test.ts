@@ -2,21 +2,8 @@ import { describe, it, expect, mock, beforeEach, afterEach } from "bun:test";
 import { existsSync, unlinkSync } from "node:fs";
 import { piCodingAgentMock, piTuiMock, typeboxMock } from "@pi-ext/shared/test-mocks";
 
-// Extend the shared TUI mock with Image component
-const extendedTuiMock = () => ({
-  ...piTuiMock(),
-  Image: class Image {
-    constructor(
-      public base64Data: string,
-      public mimeType: string,
-      public theme: any,
-      public options: any,
-    ) {}
-  },
-});
-
 mock.module("@mariozechner/pi-coding-agent", piCodingAgentMock);
-mock.module("@mariozechner/pi-tui", extendedTuiMock);
+mock.module("@mariozechner/pi-tui", piTuiMock);
 mock.module("typebox", typeboxMock);
 
 import ext from "./index";
@@ -121,7 +108,7 @@ describe("pi-image extension", () => {
             { type: "text" as const, text: "Generated image saved to /tmp/pi-img-abc123.png" },
           ],
           details: {
-            model: "flux-2-max",
+            model: "flux.2-max",
             aspectRatio: "16:9",
             sizeBytes: 12345,
             path: "/tmp/pi-img-abc123.png",
@@ -133,7 +120,7 @@ describe("pi-image extension", () => {
       );
 
       expect(result.text).toContain("/tmp/pi-img-abc123.png");
-      expect(result.text).toContain("flux-2-max");
+      expect(result.text).toContain("flux.2-max");
       expect(result.text).toContain("16:9");
     });
 
@@ -188,6 +175,13 @@ describe("pi-image extension", () => {
 
       // Content text mentions the saved path
       expect(result.content[0].text).toMatch(/\/tmp\/pi-img-[a-f0-9]+\.png/);
+      // Content includes inline image data (same flow as read tool)
+      expect(result.content[1]).toEqual({
+        type: "image",
+        data: expect.any(String),
+        mimeType: "image/png",
+      });
+      expect(result.content[1].data.length).toBeGreaterThan(0);
       // Details contain model, aspectRatio, sizeBytes, path
       expect(result.details.model).toBeTruthy();
       expect(result.details.aspectRatio).toBe("1:1");
@@ -302,7 +296,7 @@ describe("pi-image extension", () => {
       );
 
       expect(result.details.model).toBe(
-        process.env.IMAGE_MODEL_BEST || "black-forest-labs/flux-2-max",
+        process.env.IMAGE_MODEL_BEST || "black-forest-labs/flux.2-max",
       );
 
       savedFiles.push(result.details.path);
@@ -408,8 +402,8 @@ describe("pi-image extension", () => {
     });
   });
 
-  describe("execute — TUI image display", () => {
-    it("displays image via ctx.ui.custom() when UI is available", async () => {
+  describe("execute — inline image", () => {
+    it("includes base64 image in the content array for framework rendering", async () => {
       mockFetch.mockResolvedValue(
         new Response(
           JSON.stringify({
@@ -432,71 +426,20 @@ describe("pi-image extension", () => {
         ),
       );
 
-      const mockCustom = mock((_cb: any) => {
-        return Promise.resolve("closed");
-      });
-      const ctx = {
-        hasUI: true,
-        ui: { custom: mockCustom },
-      };
-
       const result = await tool.execute(
-        "call-ui",
+        "call-inline",
         { prompt: "test" },
         new AbortController().signal,
         mock(() => {}),
-        ctx,
+        {},
       );
 
-      // ctx.ui.custom() was called
-      expect(mockCustom).toHaveBeenCalledTimes(1);
-      // The result still includes the saved file path
-      expect(result.details.path).toMatch(/\/tmp\/pi-img-[a-f0-9]+\.png/);
-
-      savedFiles.push(result.details.path);
-    });
-
-    it("skips image display when UI is not available", async () => {
-      mockFetch.mockResolvedValue(
-        new Response(
-          JSON.stringify({
-            choices: [
-              {
-                message: {
-                  role: "assistant",
-                  content: "Here's your image",
-                  images: [
-                    {
-                      type: "image_url",
-                      image_url: { url: PNG_DATA_URL },
-                    },
-                  ],
-                },
-              },
-            ],
-          }),
-          { status: 200, headers: { "Content-Type": "application/json" } },
-        ),
-      );
-
-      const mockCustom = mock(() => {});
-      const ctx = {
-        hasUI: false,
-        ui: { custom: mockCustom },
-      };
-
-      const result = await tool.execute(
-        "call-no-ui",
-        { prompt: "test" },
-        new AbortController().signal,
-        mock(() => {}),
-        ctx,
-      );
-
-      // ctx.ui.custom() was NOT called
-      expect(mockCustom).not.toHaveBeenCalled();
-      // The result still works normally
-      expect(result.details.path).toMatch(/\/tmp\/pi-img-[a-f0-9]+\.png/);
+      // Result content has two entries: text + inline image
+      expect(result.content).toHaveLength(2);
+      expect(result.content[0].type).toBe("text");
+      expect(result.content[1].type).toBe("image");
+      expect(result.content[1].mimeType).toBe("image/png");
+      expect(result.content[1].data).toMatch(/^[A-Za-z0-9+/=]+$/);
 
       savedFiles.push(result.details.path);
     });

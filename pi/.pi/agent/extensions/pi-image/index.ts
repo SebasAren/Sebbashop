@@ -6,7 +6,7 @@
  */
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { Image } from "@mariozechner/pi-tui";
+import { Type } from "typebox";
 import { reuseOrCreateText } from "@pi-ext/shared";
 import { generateImageApi } from "./api";
 import { saveImageToTemp } from "./save";
@@ -17,7 +17,23 @@ export type { GenerateImageApiResult } from "./api";
 export type { SaveImageResult } from "./save";
 
 const DEFAULT_MODEL_FAST = "bytedance-seed/seedream-4.5";
-const DEFAULT_MODEL_BEST = "black-forest-labs/flux-2-max";
+const DEFAULT_MODEL_BEST = "black-forest-labs/flux.2-max";
+
+const GenerateImageParams = Type.Object({
+  prompt: Type.String({
+    description: "Text description of the image to generate",
+  }),
+  quality: Type.Optional(
+    Type.String({
+      description: "Image quality: 'fast' or 'best' (default: 'fast')",
+    }),
+  ),
+  aspect_ratio: Type.Optional(
+    Type.String({
+      description: "Aspect ratio, e.g. '1:1', '16:9' (default: '1:1')",
+    }),
+  ),
+});
 
 interface ExecuteParams {
   prompt: string;
@@ -33,7 +49,7 @@ export default function (pi: ExtensionAPI): void {
       "Generate an image via OpenRouter image generation API. " +
       "Takes a text prompt, optional quality (fast/best) and aspect_ratio, " +
       "returns path + metadata to the agent.",
-    parameters: {} as any,
+    parameters: GenerateImageParams,
 
     renderCall(args: any, theme: any, context: any) {
       const quality = args.quality || "fast";
@@ -58,7 +74,7 @@ export default function (pi: ExtensionAPI): void {
       params: ExecuteParams,
       _signal: AbortSignal,
       _onUpdate: (update: any) => void,
-      ctx: any,
+      _ctx: any,
     ) {
       const quality = params.quality || "fast";
       const aspectRatio = params.aspect_ratio || "1:1";
@@ -76,22 +92,11 @@ export default function (pi: ExtensionAPI): void {
       const image = result.images[0];
       const saved = saveImageToTemp(image.data, image.mimeType);
 
-      // Show image in TUI if available
-      if (ctx?.hasUI) {
-        await ctx.ui.custom(
-          (_tui: any, theme: any, _kb: any, _done: (value?: string) => void) => {
-            return new Image(image.data, image.mimeType, theme, {
-              maxWidthCells: 80,
-              maxHeightCells: 24,
-            });
-            // Note: image display is dismissed via framework key handling
-          },
-          { overlay: true },
-        );
-      }
-
       return {
-        content: [{ type: "text" as const, text: `Generated image saved to ${saved.path}` }],
+        content: [
+          { type: "text" as const, text: `Generated image saved to ${saved.path}` },
+          { type: "image" as const, data: image.data, mimeType: image.mimeType },
+        ],
         details: {
           model,
           aspectRatio,
