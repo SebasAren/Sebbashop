@@ -58,7 +58,7 @@ export async function generateImageApi(
     body: JSON.stringify({
       model,
       messages: [{ role: "user", content: prompt }],
-      modalities: ["image", "text"],
+      modalities: ["image"],
       image_config: { aspect_ratio: aspectRatio },
     }),
   });
