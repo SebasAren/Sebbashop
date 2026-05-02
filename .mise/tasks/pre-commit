@@ -14,8 +14,7 @@ run() {
     fi
 }
 
-run format
-run lint
+run lint-changed
 run typecheck
 run test
 

@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+#MISE description="Auto-format and lint only changed (staged) files"
+set -euo pipefail
+
+REPO_ROOT="${WT_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || echo .)}"
+
+# Get staged files (Added, Copied, Modified, Renamed — not Deleted)
+mapfile -t files < <(git diff --cached --name-only --diff-filter=ACMR)
+
+if [ ${#files[@]} -eq 0 ]; then
+    echo "✓ No files to check"
+    exit 0
+fi
+
+echo "Changed files: ${files[*]}"
+echo "---"
+
+failed=()
+recheck=()
+
+# --- Lua ---
+lua_files=()
+for f in "${files[@]}"; do
+    [[ "$f" == *.lua ]] && lua_files+=("$f")
+done
+if [ ${#lua_files[@]} -gt 0 ]; then
+    echo "→ Lua: ${lua_files[*]}"
+    stylua "${lua_files[@]}" && recheck+=("${lua_files[@]}") || failed+=("stylua")
+    luacheck --config "$REPO_ROOT/nvim/.config/nvim/.luacheckrc" "${lua_files[@]}" || failed+=("luacheck")
+fi
+
+# --- TypeScript/JavaScript ---
+ts_files=()
+for f in "${files[@]}"; do
+    [[ "$f" == *.ts || "$f" == *.tsx || "$f" == *.js || "$f" == *.jsx ]] && ts_files+=("$f")
+done
+if [ ${#ts_files[@]} -gt 0 ]; then
+    echo "→ TS/JS: ${ts_files[*]}"
+    (cd "$REPO_ROOT/pi/.pi/agent/extensions" && prettier --write "${ts_files[@]}") && recheck+=("${ts_files[@]}") || failed+=("prettier")
+    (cd "$REPO_ROOT/pi/.pi/agent/extensions" && bunx eslint --fix "${ts_files[@]}") || failed+=("eslint")
+fi
+
+# --- Python ---
+py_files=()
+for f in "${files[@]}"; do
+    [[ "$f" == *.py ]] && py_files+=("$f")
+done
+if [ ${#py_files[@]} -gt 0 ]; then
+    echo "→ Python: ${py_files[*]}"
+    ruff format "${py_files[@]}" && recheck+=("${py_files[@]}") || failed+=("ruff-format")
+    ruff check --fix "${py_files[@]}" || failed+=("ruff-lint")
+fi
+
+# --- Shell ---
+sh_files=()
+for f in "${files[@]}"; do
+    [[ "$f" == *.sh ]] && sh_files+=("$f")
+done
+if [ ${#sh_files[@]} -gt 0 ]; then
+    echo "→ Shell: ${sh_files[*]}"
+    shfmt -w "${sh_files[@]}" && recheck+=("${sh_files[@]}") || failed+=("shfmt")
+    shellcheck "${sh_files[@]}" || failed+=("shellcheck")
+fi
+
+# --- Other prettier-formatable files (json, md, yaml, toml) ---
+prettier_files=()
+for f in "${files[@]}"; do
+    [[ "$f" == *.json || "$f" == *.md || "$f" == *.yaml || "$f" == *.yml || "$f" == *.toml ]] && prettier_files+=("$f")
+done
+if [ ${#prettier_files[@]} -gt 0 ]; then
+    echo "→ Other (prettier): ${prettier_files[*]}"
+    prettier --config "$REPO_ROOT/pi/.pi/agent/extensions/.prettierrc.json" --write "${prettier_files[@]}" && recheck+=("${prettier_files[@]}") || failed+=("prettier")
+fi
+
+# Re-stage files modified by formatters
+if [ ${#recheck[@]} -gt 0 ]; then
+    git add --update "${recheck[@]}"
+fi
+
+# Report
+if [ ${#failed[@]} -gt 0 ]; then
+    echo ""
+    echo "Failed tasks: ${failed[*]}"
+    echo "Run individually for details: mise run <task>"
+    exit 1
+fi
