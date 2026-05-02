@@ -40,18 +40,21 @@ body {
   margin: 4rem auto 6rem;
 }
 
-.hero-logo {
-  display: block;
-  width: 10rem;
-  height: 10rem;
-  margin: 0 auto 2rem;
-  border-radius: 16px;
-  animation: logoGlow 3s ease-in-out infinite alternate;
+.handle-logo {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-right: 0.2em;
+  transform: translateY(-2px);
 }
 
-@keyframes logoGlow {
-  0% { filter: drop-shadow(0 0 12px rgba(88, 166, 255, 0.3)); }
-  100% { filter: drop-shadow(0 0 20px rgba(163, 113, 247, 0.4)); }
+.handle-logo img {
+  width: 1.15em;
+  height: 1.15em;
+  border-radius: 5px;
+  vertical-align: middle;
+  mix-blend-mode: screen;
+  object-fit: contain;
 }
 
 .hero .handle {
@@ -752,14 +755,13 @@ body {
     padding: 1.5rem 1rem;
   }
 
-  .hero-logo {
-    width: 7rem;
-    height: 7rem;
-    margin-bottom: 1.5rem;
+.hero .handle {
+    font-size: 1.8rem;
   }
 
-  .hero .handle {
-    font-size: 1.8rem;
+  .handle-logo img {
+    width: 1em;
+    height: 1em;
   }
 
   .hero .tagline {
