@@ -22,7 +22,8 @@
     "wiki-lint",
     "wiki-stash",
     "extract-share",
-    "pi-notify"
+    "pi-notify",
+    "pi-image"
   ],
   "devDependencies": {
     "@eslint/js": "^10.0.0",

@@ -1,0 +1,12 @@
+{
+  "name": "@pi-ext/pi-image",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@pi-ext/shared": "workspace:*"
+  },
+  "pi": {
+    "extensions": ["./index.ts"]
+  }
+}

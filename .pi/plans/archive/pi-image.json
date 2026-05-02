@@ -1,0 +1,171 @@
+{
+  "title": "Pi Image Generation Extension",
+  "slug": "pi-image",
+  "context": "New pi extension that registers a generate_image tool. Takes a text prompt, optional quality (fast/best) and aspect_ratio, calls OpenRouter image generation API, saves base64 response to /tmp, returns path + metadata to agent.",
+  "architecture": "Single extension directory pi-image/ with index.ts. Uses OpenRouter chat completions API with image modality. Env vars: OPENROUTER_API_KEY (existing), IMAGE_MODEL_FAST (default: bytedance-research/seedream-4.5), IMAGE_MODEL_BEST (default: black-forest-labs/flux-2-max). Output: /tmp/pi-img-<hash>.png",
+  "created": "2026-05-01T14:37:41.259Z",
+  "updated": "2026-05-02T00:08:42.811Z",
+  "steps": [
+    {
+      "index": 1,
+      "name": "Scaffold extension",
+      "red": {
+        "description": "Create pi-image/ with package.json, tsconfig.json, and a minimal index.ts that exports a default function. Write integration test asserting registerTool is called with name generate_image. Run bun test → fails (module not found).",
+        "status": "done"
+      },
+      "green": {
+        "description": "Implement the minimal extension scaffold so test passes.",
+        "status": "done"
+      },
+      "refactor": {
+        "description": "",
+        "status": "skipped"
+      },
+      "completed": true
+    },
+    {
+      "index": 2,
+      "name": "OpenRouter API client",
+      "red": {
+        "description": "Write unit test for a generateImageApi(prompt, model, aspectRatio) function that POSTs to OpenRouter and returns { images: [{ data, mimeType }] }. Test with mocked fetch.",
+        "status": "done"
+      },
+      "green": {
+        "description": "Implement the API client using fetch against OpenRouter chat completions endpoint with modalities: [image, text].",
+        "status": "done"
+      },
+      "refactor": {
+        "description": "Extract API call into a standalone exported function for testability.",
+        "status": "done"
+      },
+      "completed": true
+    },
+    {
+      "index": 3,
+      "name": "File saving",
+      "red": {
+        "description": "Write unit test for a saveImageToTemp(base64Data, mimeType) function that decodes base64, writes to /tmp/pi-img-<hash>.png, returns { path, sizeBytes }. Test with real temp dir.",
+        "status": "done"
+      },
+      "green": {
+        "description": "Implement using writeFileSync with Buffer.from(data, base64).",
+        "status": "done"
+      },
+      "refactor": {
+        "description": "",
+        "status": "skipped"
+      },
+      "completed": true
+    },
+    {
+      "index": 4,
+      "name": "Tool execute — happy path",
+      "red": {
+        "description": "Write unit test calling the tool execute with { prompt: a sunset }, mocking the API client and file saver. Assert it returns content with the file path and details with model, aspectRatio, sizeBytes.",
+        "status": "done"
+      },
+      "green": {
+        "description": "Wire up API client + file saver in the tool execute function, using env vars for model selection.",
+        "status": "done"
+      },
+      "refactor": {
+        "description": "",
+        "status": "skipped"
+      },
+      "completed": true
+    },
+    {
+      "index": 5,
+      "name": "Tool execute — error handling",
+      "red": {
+        "description": "Write unit test where mocked fetch throws an error. Assert execute throws (not returns) an error message.",
+        "status": "done"
+      },
+      "green": {
+        "description": "Add error handling that throws on API failure, missing API key, etc.",
+        "status": "done"
+      },
+      "refactor": {
+        "description": "",
+        "status": "skipped"
+      },
+      "completed": true
+    },
+    {
+      "index": 6,
+      "name": "Tool execute — quality and aspect ratio params",
+      "red": {
+        "description": "Write unit tests: (a) quality best uses IMAGE_MODEL_BEST env var, (b) aspectRatio 16:9 is passed to API, (c) both default correctly (fast, 1:1).",
+        "status": "done"
+      },
+      "green": {
+        "description": "Implement param handling in execute.",
+        "status": "done"
+      },
+      "refactor": {
+        "description": "",
+        "status": "skipped"
+      },
+      "completed": true
+    },
+    {
+      "index": 7,
+      "name": "renderCall and renderResult",
+      "red": {
+        "description": "Write unit test for renderCall showing prompt and quality, and renderResult showing file path and metadata.",
+        "status": "done"
+      },
+      "green": {
+        "description": "Implement both render functions using pi theme helpers.",
+        "status": "done"
+      },
+      "refactor": {
+        "description": "",
+        "status": "skipped"
+      },
+      "completed": true
+    },
+    {
+      "index": 8,
+      "name": "TUI Image display",
+      "red": {
+        "description": "Write unit test verifying the tool execute uses ctx.ui.custom() with an Image component when UI is available. Test with mock context.",
+        "status": "done"
+      },
+      "green": {
+        "description": "Add image display logic — create Image component with base64 data, show via ctx.ui.custom(). Skip display when !ctx.hasUI.",
+        "status": "done"
+      },
+      "refactor": {
+        "description": "",
+        "status": "skipped"
+      },
+      "completed": true
+    },
+    {
+      "index": 9,
+      "name": "Workspace integration",
+      "red": {
+        "description": "Add pi-image to root package.json workspaces array. Run bun install and bun test from workspace root.",
+        "status": "done"
+      },
+      "green": {
+        "description": "Fix any workspace resolution issues.",
+        "status": "done"
+      },
+      "refactor": {
+        "description": "",
+        "status": "skipped"
+      },
+      "completed": true
+    }
+  ],
+  "notes": [],
+  "design": {
+    "currentState": "Pi extensions workspace with 18 existing extensions. Each extension exports a default function receiving ExtensionAPI, registers tools/commands/events. Testing uses bun:test with shared mocks from @pi-ext/shared/test-mocks. No image generation capability exists.",
+    "desiredState": "New pi-image extension registers a generate_image tool. Agent calls it with (prompt, quality?, aspect_ratio?), it calls OpenRouter chat completions API with image modality, decodes base64 response, saves to /tmp/pi-img-<hash>.png, renders image via pi's Image TUI component (works on supported terminals, no-op on PTYxis/VTE), returns path + metadata (model, aspect_ratio, size) to agent.",
+    "patterns": "Tool registration: pi.registerTool({ name, label, description, parameters, execute, renderCall, renderResult }). Parameters use Type from typebox. Execute returns { content: [{type:'text', text:'...'}] }. Image TUI component: new Image(base64Data, mimeType, theme, { maxWidthCells, maxHeightCells }). Integration test: mock.module for deps, create mockApi, assert registerTool called.",
+    "decisions": "OpenRouter as sole provider (one API key, many models). Two quality tiers via env vars (IMAGE_MODEL_FAST default: bytedance-research/seedream-4.5, IMAGE_MODEL_BEST default: black-forest-labs/flux-2-max). Aspect ratio agent-specified via param, defaults 1:1. Resolution hardcoded 1K. Output to /tmp ephemeral. Fail loudly on errors (throw), no retry. Text-to-image only for v1. Image display via pi TUI Image component. Agent receives path + metadata.",
+    "questions": "None remaining"
+  }
+}
