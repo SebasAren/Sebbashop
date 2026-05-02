@@ -296,7 +296,7 @@ describe("pi-image extension", () => {
       );
 
       expect(result.details.model).toBe(
-        process.env.IMAGE_MODEL_BEST || "black-forest-labs/flux.2-max",
+        process.env.IMAGE_MODEL_BEST || "google/gemini-3.1-flash-image-preview",
       );
 
       savedFiles.push(result.details.path);

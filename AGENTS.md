@@ -19,6 +19,7 @@ stow */                    # install all
 nvim/.config/nvim/         # Neovim            → nvim/README.md
 bashrc/                    # Bash config        → bashrc/AGENTS.md
 tmux/.config/tmux/         # Tmux               → tmux/README.md
+wezterm/.config/wezterm/   # WezTerm             → wezterm/README.md
 wt/.config/worktrunk/      # Worktrunk
 pi/.pi/                    # Pi agent           → pi/.pi/README.md
 homebrew/                  # brew-sync CLI      → homebrew/AGENTS.md
@@ -49,6 +50,8 @@ Tool directories may have an `AGENTS.md` (path-scoped agent instructions) or a `
 | Tmux config | `tmux/.config/tmux/tmux.conf` |
 | Tmux docs | `tmux/README.md` |
 | Mise tasks | `.mise/tasks/` |
+| WezTerm config | `wezterm/.config/wezterm/wezterm.lua` |
+| WezTerm docs | `wezterm/README.md` |
 | Worktrunk config | `wt/.config/worktrunk/config.toml` |
 | Pre-commit checks | `mise run pre-commit` (defined in `.mise/tasks/pre-commit`) |
 | Pi extensions | `pi/.pi/agent/extensions/` (see its `AGENTS.md`) |

@@ -17,7 +17,7 @@ export type { GenerateImageApiResult } from "./api";
 export type { SaveImageResult } from "./save";
 
 const DEFAULT_MODEL_FAST = "bytedance-seed/seedream-4.5";
-const DEFAULT_MODEL_BEST = "black-forest-labs/flux.2-max";
+const DEFAULT_MODEL_BEST = "google/gemini-3.1-flash-image-preview";
 
 const GenerateImageParams = Type.Object({
   prompt: Type.String({
