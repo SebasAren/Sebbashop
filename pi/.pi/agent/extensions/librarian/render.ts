@@ -3,6 +3,7 @@
  */
 
 import { type Component, Text } from "@mariozechner/pi-tui";
+import type { Theme } from "@mariozechner/pi-coding-agent";
 import { renderSubagentResult, renderSubagentCall } from "@pi-ext/shared";
 
 import type { LibrarianDetails } from "./index";
@@ -10,7 +11,7 @@ import type { LibrarianDetails } from "./index";
 /** Render the librarian tool call with model tag and query preview. */
 export function renderCall(
   args: { query: string; library?: string; focus?: string },
-  theme: any,
+  theme: Theme,
   context: { lastComponent?: Component },
   model?: string,
 ): Text {
@@ -41,7 +42,7 @@ export function renderResult(
     isError?: boolean;
   },
   state: { expanded: boolean; isPartial: boolean },
-  theme: any,
+  theme: Theme,
   _context: unknown,
 ): Component {
   return renderSubagentResult({
@@ -52,9 +53,11 @@ export function renderResult(
     partialLabel: "researching",
     buildExpandedHeader: (d, t) => {
       const parts: string[] = [];
-      if (d.query) parts.push(t.fg("muted", "Query: ") + t.fg("dim", String(d.query)));
-      if (d.library) parts.push(t.fg("muted", ` · Library: `) + t.fg("accent", String(d.library)));
-      if (d.focus) parts.push(t.fg("muted", ` · Focus: `) + t.fg("dim", String(d.focus)));
+      const ld = d as LibrarianDetails;
+      if (ld.query) parts.push(t.fg("muted", "Query: ") + t.fg("dim", String(ld.query)));
+      if (ld.library)
+        parts.push(t.fg("muted", ` · Library: `) + t.fg("accent", String(ld.library)));
+      if (ld.focus) parts.push(t.fg("muted", ` · Focus: `) + t.fg("dim", String(ld.focus)));
       return parts.join("");
     },
   });

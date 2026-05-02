@@ -410,7 +410,8 @@ export class FileIndex {
       try {
         const fullPath = path.resolve(this.cwd, pkgFile);
         const content = await readFile(fullPath, "utf-8");
-        const pkg = JSON.parse(content);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const pkg: { name?: unknown } = JSON.parse(content);
         if (pkg.name && typeof pkg.name === "string") {
           const dir = path.dirname(pkgFile);
           this.packageNameMap.set(pkg.name, dir === "." ? "" : dir.replace(/\\/g, "/"));

@@ -19,6 +19,7 @@ interface HandlerContext {
 
 function runExtract(ctx: HandlerContext, notifyNoUI: boolean, deps: PipelineDeps): Promise<void> {
   const entries = ctx.sessionManager.getBranch();
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   const text = deps.getLastAssistantMessage(entries);
 
   if (!text) {

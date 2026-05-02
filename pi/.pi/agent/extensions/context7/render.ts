@@ -2,7 +2,8 @@
  * Context7 extension TUI renderers for both tools.
  */
 
-import { Text } from "@mariozechner/pi-tui";
+import { type Component, Text } from "@mariozechner/pi-tui";
+import type { Theme } from "@mariozechner/pi-coding-agent";
 
 import type { SearchDetails } from "./search";
 import type { DocsDetails } from "./docs";
@@ -12,8 +13,8 @@ import type { DocsDetails } from "./docs";
 /** Render the context7_search tool call. */
 export function renderSearchCall(
   args: { libraryName: string; query: string },
-  theme: any,
-  context: { lastComponent?: any },
+  theme: Theme,
+  context: { lastComponent?: Component },
 ): Text {
   let content = theme.fg("toolTitle", theme.bold("context7_search "));
   content += theme.fg("accent", `"${args.libraryName}"`);
@@ -31,7 +32,7 @@ export function renderSearchResult(
     details?: SearchDetails;
   },
   state: { expanded: boolean; isPartial: boolean },
-  theme: any,
+  theme: Theme,
 ): Text {
   if (state.isPartial) {
     return new Text(theme.fg("warning", "Searching Context7..."), 0, 0);
@@ -82,8 +83,8 @@ export function renderSearchResult(
 /** Render the context7_docs tool call. */
 export function renderDocsCall(
   args: { libraryId: string; query: string },
-  theme: any,
-  context: { lastComponent?: any },
+  theme: Theme,
+  context: { lastComponent?: Component },
 ): Text {
   let content = theme.fg("toolTitle", theme.bold("context7_docs "));
   content += theme.fg("accent", `${args.libraryId}`);
@@ -101,7 +102,7 @@ export function renderDocsResult(
     details?: DocsDetails;
   },
   state: { expanded: boolean; isPartial: boolean },
-  theme: any,
+  theme: Theme,
 ): Text {
   if (state.isPartial) {
     return new Text(theme.fg("warning", "Fetching documentation..."), 0, 0);

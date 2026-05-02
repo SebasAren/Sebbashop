@@ -65,7 +65,7 @@ async function createStashSession(
   await loader.reload();
 
   // Resolve model from name (passed through from parent session's ctx.model)
-  let model: any | undefined;
+  let model: any;
   if (modelName) {
     if (modelName.includes("/")) {
       const slashIdx = modelName.indexOf("/");
@@ -86,6 +86,7 @@ async function createStashSession(
     resourceLoader: loader,
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   if (model) opts.model = model;
 
   const { session } = await createAgentSession(opts);

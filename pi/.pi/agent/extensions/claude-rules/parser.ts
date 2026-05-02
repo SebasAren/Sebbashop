@@ -13,7 +13,7 @@ export function parseInlineArray(value: string): string[] | null {
   const trimmed = value.trim();
   if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) return null;
   try {
-    const parsed = JSON.parse(trimmed);
+    const parsed: unknown = JSON.parse(trimmed);
     if (Array.isArray(parsed)) return parsed.filter((v) => typeof v === "string");
   } catch {
     // Not valid JSON, fall through

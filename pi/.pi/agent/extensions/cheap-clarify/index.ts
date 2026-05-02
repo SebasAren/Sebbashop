@@ -108,7 +108,7 @@ export default function (pi: ExtensionAPI) {
 
       // 6. Send answers back as user message
       const answerLines = result.answers.map((a) => {
-        const q = questions!.find((qq) => qq.id === a.id);
+        const q = questions.find((qq) => qq.id === a.id);
         const qLabel = q?.label ?? a.id;
         if (a.wasCustom) {
           return `${qLabel}: ${a.label}`;

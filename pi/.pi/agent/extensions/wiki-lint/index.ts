@@ -370,7 +370,11 @@ export default function (pi: ExtensionAPI) {
     },
 
     renderResult(result, state, theme, _context) {
-      return renderLintResult(result as any, state, theme);
+      return renderLintResult(
+        result as unknown as Parameters<typeof renderLintResult>[0],
+        state,
+        theme,
+      );
     },
   });
 

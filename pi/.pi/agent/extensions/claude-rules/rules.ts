@@ -96,7 +96,7 @@ export function loadRules(projectRoot: string): ClaudeRule[] {
         body: body.trim(),
       });
     } catch (err) {
-      console.error(`[claude-rules] Failed to parse ${fullPath}: ${err}`);
+      console.error(`[claude-rules] Failed to parse ${fullPath}: ${String(err)}`);
     }
   }
 

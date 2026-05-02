@@ -7,9 +7,9 @@
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { Type } from "typebox";
-import { reuseOrCreateText } from "@pi-ext/shared";
 import { generateImageApi } from "./api";
 import { saveImageToTemp } from "./save";
+import { renderCall, renderResult } from "./render";
 
 export { generateImageApi } from "./api";
 export { saveImageToTemp } from "./save";
@@ -51,23 +51,8 @@ export default function (pi: ExtensionAPI): void {
       "returns path + metadata to the agent.",
     parameters: GenerateImageParams,
 
-    renderCall(args: any, theme: any, context: any) {
-      const quality = args.quality || "fast";
-      const text = reuseOrCreateText(context);
-      text.setText(
-        theme.fg("toolTitle", theme.bold("Generate Image ")) +
-          theme.fg("dim", args.prompt) +
-          theme.fg("muted", ` [${quality}]`),
-      );
-      return text;
-    },
-
-    renderResult(result: any, _state: any, _theme: any, context: any) {
-      const text = reuseOrCreateText(context);
-      const d = result.details;
-      text.setText(`Generated: ${d.path} (${d.model}, ${d.aspectRatio}, ${d.sizeBytes} bytes)`);
-      return text;
-    },
+    renderCall,
+    renderResult,
 
     async execute(
       _toolCallId: string,

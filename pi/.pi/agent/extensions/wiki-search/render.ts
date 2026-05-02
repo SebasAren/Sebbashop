@@ -2,14 +2,15 @@
  * Wiki Search Extension — TUI renderers.
  */
 
-import { Text } from "@mariozechner/pi-tui";
+import { type Component, Text } from "@mariozechner/pi-tui";
+import type { Theme } from "@mariozechner/pi-coding-agent";
 import type { WikiSearchDetails } from "./index";
 
 /** Render the wiki_search tool call. */
 export function renderSearchCall(
   args: { query: string; semantic?: boolean; no_rerank?: boolean },
-  theme: any,
-  context: { lastComponent?: any },
+  theme: Theme,
+  context: { lastComponent?: Component },
 ): Text {
   let content = theme.fg("toolTitle", theme.bold("wiki_search "));
   content += theme.fg("accent", `"${args.query}"`);
@@ -31,7 +32,7 @@ export function renderSearchResult(
     details?: WikiSearchDetails;
   },
   state: { expanded: boolean; isPartial: boolean },
-  theme: any,
+  theme: Theme,
 ): Text {
   if (state.isPartial) {
     return new Text(theme.fg("warning", "Searching wiki..."), 0, 0);

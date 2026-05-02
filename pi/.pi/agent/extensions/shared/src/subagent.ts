@@ -291,10 +291,12 @@ async function runSingleAttempt(
         if (loopDetection || maxToolCalls < Infinity) {
           toolHistory.push({
             name: event.toolName,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             argsSignature: argsSignature(event.args || {}),
           });
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const callLine = formatRecentCall(event.toolName, event.args);
         allCalls.push(callLine);
         recentCalls.push(callLine);
@@ -414,7 +416,9 @@ async function runSingleAttempt(
     } catch (e: any) {
       // session.prompt() may throw if aborted — that's expected
       if (!aborted && !timedOut && !stoppedEarly) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         log(`prompt error: ${e?.message || e}`);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         result.stderr += e?.message || String(e);
       }
     }

@@ -54,7 +54,11 @@ export default function (pi: ExtensionAPI) {
     },
 
     renderResult(result, state, theme, _context) {
-      return renderSearchResult(result as any, state, theme);
+      return renderSearchResult(
+        result as unknown as Parameters<typeof renderSearchResult>[0],
+        state,
+        theme,
+      );
     },
   });
 
@@ -89,7 +93,11 @@ export default function (pi: ExtensionAPI) {
     },
 
     renderResult(result, state, theme, _context) {
-      return renderFetchResult(result as any, state, theme);
+      return renderFetchResult(
+        result as unknown as Parameters<typeof renderFetchResult>[0],
+        state,
+        theme,
+      );
     },
   });
 

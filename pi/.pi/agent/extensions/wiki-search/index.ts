@@ -193,7 +193,11 @@ export default function (pi: ExtensionAPI) {
     },
 
     renderResult(result, state, theme, _context) {
-      return renderSearchResult(result as any, state, theme);
+      return renderSearchResult(
+        result as unknown as Parameters<typeof renderSearchResult>[0],
+        state,
+        theme,
+      );
     },
   });
 

@@ -3,6 +3,7 @@
  */
 
 import { type Component, Text } from "@mariozechner/pi-tui";
+import type { Theme } from "@mariozechner/pi-coding-agent";
 import { renderSubagentResult, renderSubagentCall } from "@pi-ext/shared";
 
 import type { ExploreDetails } from "./index";
@@ -10,7 +11,7 @@ import type { ExploreDetails } from "./index";
 /** Render the explore tool call with model tag and query preview. */
 export function renderCall(
   args: { query: string; directory?: string; files?: string[]; thoroughness?: string },
-  theme: any,
+  theme: Theme,
   context: { lastComponent?: Component },
   model?: string,
 ): Text {
@@ -44,7 +45,7 @@ export function renderResult(
     isError?: boolean;
   },
   state: { expanded: boolean; isPartial: boolean },
-  theme: any,
+  theme: Theme,
   _context: unknown,
 ): Component {
   const _details = result.details;

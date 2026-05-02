@@ -10,11 +10,11 @@
  */
 
 interface StdinLike {
-  setRawMode(mode: boolean): this;
-  resume(): this;
-  pause(): this;
-  on(event: string, listener: (...args: any[]) => void): this;
-  removeListener(event: string, listener: (...args: any[]) => void): this;
+  setRawMode: (mode: boolean) => this;
+  resume: () => this;
+  pause: () => this;
+  on: (event: string, listener: (...args: any[]) => void) => this;
+  removeListener: (event: string, listener: (...args: any[]) => void) => this;
 }
 
 let focused = true;

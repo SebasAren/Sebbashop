@@ -23,6 +23,7 @@ beforeAll(() => {
   }));
 });
 
+import type { Theme } from "@mariozechner/pi-coding-agent";
 import { WikiSearchDetails } from "./index";
 import { renderSearchCall, renderSearchResult } from "./render";
 
@@ -32,7 +33,7 @@ describe("renderSearchCall", () => {
   const theme = {
     fg: (key: string, text: string) => `[${key}:${text}]`,
     bold: (text: string) => `**${text}**`,
-  };
+  } as unknown as Theme;
 
   it("renders basic query", () => {
     const text = renderSearchCall({ query: "agent swarm" }, theme, {});
@@ -57,7 +58,7 @@ describe("renderSearchResult", () => {
   const theme = {
     fg: (key: string, text: string) => `[${key}:${text}]`,
     bold: (text: string) => `**${text}**`,
-  };
+  } as unknown as Theme;
 
   const makeResult = (
     details?: WikiSearchDetails,

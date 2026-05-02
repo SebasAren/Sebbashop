@@ -125,7 +125,7 @@ export async function rerankCandidates(
     reranked.sort((a, b) => b.relevanceScore - a.relevanceScore);
     return reranked;
   } catch (err) {
-    console.warn(`[explore] Rerank failed: ${err}`);
+    console.warn(`[explore] Rerank failed: ${String(err)}`);
     return candidates.map((c) => ({
       ...c,
       relevanceScore: heuristicToRelevance(c.score),

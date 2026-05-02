@@ -2,14 +2,15 @@
  * Wiki Lint Extension — TUI renderers.
  */
 
-import { Text } from "@mariozechner/pi-tui";
+import { type Component, Text } from "@mariozechner/pi-tui";
+import type { Theme } from "@mariozechner/pi-coding-agent";
 import type { WikiLintDetails } from "./index";
 
 /** Render the wiki_lint tool call. */
 export function renderLintCall(
   args: { checks?: string[] },
-  theme: any,
-  context: { lastComponent?: any },
+  theme: Theme,
+  context: { lastComponent?: Component },
 ): Text {
   let content = theme.fg("toolTitle", theme.bold("wiki_lint"));
   if (args.checks && args.checks.length > 0) {
@@ -30,7 +31,7 @@ export function renderLintResult(
     details?: WikiLintDetails;
   },
   state: { expanded: boolean; isPartial: boolean },
-  theme: any,
+  theme: Theme,
 ): Text {
   if (state.isPartial) {
     return new Text(theme.fg("warning", "Linting wiki..."), 0, 0);

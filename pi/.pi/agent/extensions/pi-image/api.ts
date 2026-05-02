@@ -7,6 +7,23 @@
 
 const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 
+/** OpenRouter API chat completion response shape (image generation path only). */
+interface OpenRouterChoiceMessageImage {
+  image_url?: { url?: string };
+}
+
+interface OpenRouterChoiceMessage {
+  images?: OpenRouterChoiceMessageImage[];
+}
+
+interface OpenRouterChoice {
+  message?: OpenRouterChoiceMessage;
+}
+
+interface OpenRouterResponse {
+  choices?: OpenRouterChoice[];
+}
+
 interface ImageResult {
   data: string;
   mimeType: string;
@@ -68,12 +85,11 @@ export async function generateImageApi(
     throw new Error(`OpenRouter image request failed (${response.status}): ${errorText}`);
   }
 
-  const data = await response.json();
+  const data = (await response.json()) as OpenRouterResponse;
   const images: ImageResult[] = [];
 
-  const choices = data?.choices;
-  if (Array.isArray(choices) && choices.length > 0) {
-    const message = choices[0]?.message;
+  if (data?.choices && data.choices.length > 0) {
+    const message = data.choices[0]?.message;
     if (message?.images && Array.isArray(message.images)) {
       for (const img of message.images) {
         const url = img?.image_url?.url;

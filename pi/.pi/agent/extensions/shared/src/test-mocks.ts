@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 /**
  * Shared mock factory functions for extension tests.
+ *
+ * Intentional mock infrastructure with `any`-typed fixtures.
  *
  * Each extension test file should call `mock.module()` with these factories
  * at the top level (before importing the extension under test) so that

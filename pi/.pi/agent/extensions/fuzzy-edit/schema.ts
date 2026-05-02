@@ -44,6 +44,7 @@ export function prepareArguments(args: unknown): {
   // Detect this and parse it before schema validation rejects it.
   if (typeof input.edits === "string") {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       input.edits = JSON.parse(input.edits);
     } catch {
       // If parsing fails, let schema validation produce the error message

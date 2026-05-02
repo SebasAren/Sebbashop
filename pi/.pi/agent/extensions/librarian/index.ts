@@ -40,7 +40,7 @@ function getSharedInfrastructure() {
 }
 
 /** Resolve a model name (e.g. "provider/model-id") to a Model object, or undefined. */
-function resolveModel(modelName?: string): any | undefined {
+function resolveModel(modelName?: string): any {
   const name = modelName || getModel();
   if (!name) return undefined;
 
@@ -79,6 +79,7 @@ async function createLibrarianSession(
   });
   await loader.reload();
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const model = resolveModel(modelName);
 
   const opts: CreateAgentSessionOptions = {
@@ -101,6 +102,7 @@ async function createLibrarianSession(
     resourceLoader: loader,
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   if (model) opts.model = model;
 
   const { session } = await createAgentSession(opts);
@@ -263,7 +265,12 @@ export default function (pi: ExtensionAPI) {
     },
 
     renderResult(result, state, theme, context) {
-      return renderResult(result as any, state, theme, context);
+      return renderResult(
+        result as unknown as Parameters<typeof renderResult>[0],
+        state,
+        theme,
+        context,
+      );
     },
   });
 

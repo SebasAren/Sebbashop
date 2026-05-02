@@ -218,12 +218,12 @@ export default function (pi: ExtensionAPI) {
 
         default:
           return {
-            content: [{ type: "text", text: `Unknown action: ${params.action}` }],
+            content: [{ type: "text", text: `Unknown action: ${String(params.action)}` }],
             details: {
               action: "list",
               todos: [...todos],
               nextId,
-              error: `unknown action: ${params.action}`,
+              error: `unknown action: ${String(params.action)}`,
             } as TodoDetails,
           };
       }

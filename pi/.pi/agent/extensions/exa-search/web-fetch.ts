@@ -1,5 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument */
 /**
  * Web fetch tool — schema, types, and execute logic.
+ *
+ * The Exa SDK returns `any`-typed responses throughout, making these
+ * lint rules unavoidably noisy. See pi-extensions.md §exa-js Typing.
  */
 
 import Exa from "exa-js";

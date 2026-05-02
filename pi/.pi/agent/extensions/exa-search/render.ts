@@ -2,7 +2,8 @@
  * Exa extension TUI renderers for both web_search and web_fetch tools.
  */
 
-import { Text } from "@mariozechner/pi-tui";
+import { type Component, Text } from "@mariozechner/pi-tui";
+import type { Theme } from "@mariozechner/pi-coding-agent";
 
 import type { WebSearchDetails } from "./web-search";
 import type { WebFetchDetails } from "./web-fetch";
@@ -12,8 +13,8 @@ import type { WebFetchDetails } from "./web-fetch";
 /** Render the web_search tool call. */
 export function renderSearchCall(
   args: { query: string; type?: string; category?: string },
-  theme: any,
-  context: { lastComponent?: any },
+  theme: Theme,
+  context: { lastComponent?: Component },
 ): Text {
   let content = theme.fg("toolTitle", theme.bold("web_search "));
   content += theme.fg("accent", `"${args.query}"`);
@@ -36,7 +37,7 @@ export function renderSearchResult(
     details?: WebSearchDetails;
   },
   state: { expanded: boolean; isPartial: boolean },
-  theme: any,
+  theme: Theme,
 ): Text {
   // Handle streaming/partial results
   if (state.isPartial) {
@@ -100,8 +101,8 @@ export function renderSearchResult(
 /** Render the web_fetch tool call. */
 export function renderFetchCall(
   args: { urls?: string[]; format?: string },
-  theme: any,
-  context: { lastComponent?: any },
+  theme: Theme,
+  context: { lastComponent?: Component },
 ): Text {
   const urlCount = args.urls?.length ?? 0;
   const first = args.urls?.[0] ?? "";
@@ -123,7 +124,7 @@ export function renderFetchResult(
     details?: WebFetchDetails;
   },
   state: { expanded: boolean; isPartial: boolean },
-  theme: any,
+  theme: Theme,
 ): Text {
   if (state.isPartial) {
     return new Text(theme.fg("warning", "Fetching pages..."), 0, 0);
