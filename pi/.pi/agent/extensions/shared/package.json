@@ -19,7 +19,7 @@
     "web-tree-sitter": "^0.26.8"
   },
   "peerDependencies": {
-    "@mariozechner/pi-coding-agent": "^0.70.6",
-    "@mariozechner/pi-tui": "^0.70.6"
+    "@mariozechner/pi-coding-agent": "^0.70.6 || ^0.72.0",
+    "@mariozechner/pi-tui": "^0.70.6 || ^0.72.0"
   }
 }
