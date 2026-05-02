@@ -305,6 +305,36 @@ class StreamRegion(MarkedRegion):
         return _span(old_point.line, point.line)
 
 
+class LineRegion(MarkedRegion):
+    name = 'line'
+
+    @staticmethod
+    def line_inside_region(current_line: AbsoluteLine,
+                           start: Position, end: Position) -> bool:
+        return start.line < current_line < end.line
+
+    @staticmethod
+    def selection_in_line(
+            current_line: AbsoluteLine, start: Position, end: Position,
+            maxx: ScreenColumn) -> SelectionInLine:
+        if LineRegion.line_outside_region(current_line, start, end):
+            return None, None
+        # Always select the full line regardless of cursor x position.
+        return 0, maxx
+
+    @staticmethod
+    def adjust(start: Position, end: Position) -> Tuple[Position, Position]:
+        # Expand to full lines: force x to 0 and maxx.
+        if start.line > end.line or (start.line == end.line and start.x > end.x):
+            start, end = end, start
+        return start._replace(x=0), end._replace(x=end.x)  # end.x kept for len calc
+
+    @staticmethod
+    def lines_affected(mark: Optional[Position], old_point: Position,
+                       point: Position) -> Set[AbsoluteLine]:
+        return _span(old_point.line, point.line)
+
+
 class ColumnarRegion(MarkedRegion):
     name = 'columnar'
 
@@ -501,6 +531,7 @@ class GrabHandler(Handler):
 
     mode_types = {'normal': NoRegion,
                   'visual': StreamRegion,
+                  'line': LineRegion,
                   'block': ColumnarRegion,
                   }  # type: Dict[ModeTypeStr, Type[Region]]
 
