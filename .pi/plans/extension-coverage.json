@@ -1,0 +1,186 @@
+{
+  "title": "Improve extension test coverage from 87% to 95%+",
+  "slug": "extension-coverage",
+  "context": "Coverage audit revealed 88% func / 87% line coverage across pi extensions. Main gaps: render functions (context7, exa-search, wiki-lint, wiki-search), subagent orchestration (shared/src/subagent.ts at 67%), plan-mode (58%), explore/file-index.ts (53%), and 3 extensions with zero tests (todo 303 LOC, wiki-stash 195 LOC, git-checkpoint 57 LOC). All extensions use Bun test runner with shared mocks from @pi-ext/shared/test-mocks.",
+  "architecture": "Bun test runner, mock.module() hoisting, co-located *.test.ts files, shared mock factories in shared/src/test-mocks.ts. Render tests use piTuiRenderMock from shared. Extensions register tools/commands and have render functions for TUI output.",
+  "created": "2026-05-02T22:07:14.462Z",
+  "updated": "2026-05-02T22:07:14.462Z",
+  "steps": [
+    {
+      "index": 1,
+      "name": "Step 1: wiki-lint render coverage (3% → 80%+)",
+      "red": {
+        "description": "Write tests in wiki-lint/render.test.ts for render.ts: test renderLintResult with empty results, with violations (error/warning/info levels), with fix suggestions. Use piTuiRenderMock and assert on rendered string output.",
+        "status": "not_started"
+      },
+      "green": {
+        "description": "Implement or adjust render.ts only if tests reveal dead code — the goal is covering existing logic, not changing it. Tests drive the coverage up by exercising all branches.",
+        "status": "not_started"
+      },
+      "refactor": {
+        "description": "Extract repeated render setup (theme, width) into a helper if duplication emerges.",
+        "status": "not_started"
+      },
+      "completed": false
+    },
+    {
+      "index": 2,
+      "name": "Step 2: wiki-search render coverage (85% → 95%+)",
+      "red": {
+        "description": "Write tests for uncovered branches in wiki-search/render.ts: empty search results, results without highlights, results with long file paths that need truncation.",
+        "status": "not_started"
+      },
+      "green": {
+        "description": "Cover the remaining edge cases by exercising the uncovered lines (44-48, 56, 59, 72).",
+        "status": "not_started"
+      },
+      "refactor": {
+        "description": "",
+        "status": "not_started"
+      },
+      "completed": false
+    },
+    {
+      "index": 3,
+      "name": "Step 3: context7 render coverage (60% → 85%+)",
+      "red": {
+        "description": "Write tests in context7/render.test.ts for render.ts: test renderSearchResult with no results, with result items at different indentation levels, with error state, with loading state.",
+        "status": "not_started"
+      },
+      "green": {
+        "description": "Exercise all render branches using piTuiRenderMock. Cover lines 44-48, 59-62, 64-69, 71-75, 114-118, 129-132, 134-145.",
+        "status": "not_started"
+      },
+      "refactor": {
+        "description": "",
+        "status": "not_started"
+      },
+      "completed": false
+    },
+    {
+      "index": 4,
+      "name": "Step 4: exa-search render coverage (66% → 85%+)",
+      "red": {
+        "description": "Write tests in exa-search/render.test.ts for render.ts: test renderSearchResults with empty results, single result, multiple results, results with/without highlights, error states.",
+        "status": "not_started"
+      },
+      "green": {
+        "description": "Cover lines 51-55, 73-75, 77-78, 80-87, 89-93, 136-140, 154, 158-161, 163-168, 170-171.",
+        "status": "not_started"
+      },
+      "refactor": {
+        "description": "",
+        "status": "not_started"
+      },
+      "completed": false
+    },
+    {
+      "index": 5,
+      "name": "Step 5: explore/file-index coverage (53% → 75%+)",
+      "red": {
+        "description": "Write tests for uncovered file-index.ts functions: FileIndex scoring edge cases (empty index, single file, duplicate scores), index building from directory tree, file watching add/remove/update paths.",
+        "status": "not_started"
+      },
+      "green": {
+        "description": "Cover the large uncovered block (lines 136-249, 400-421, 550-597) by exercising index construction and query execution.",
+        "status": "not_started"
+      },
+      "refactor": {
+        "description": "",
+        "status": "not_started"
+      },
+      "completed": false
+    },
+    {
+      "index": 6,
+      "name": "Step 6: shared/subagent coverage (67% → 85%+)",
+      "red": {
+        "description": "Write tests in shared/src/subagent.test.ts for uncovered orchestration paths: error handling during subagent execution, cancellation/timeout scenarios, session lifecycle, retry logic.",
+        "status": "not_started"
+      },
+      "green": {
+        "description": "Cover lines 291-347 (runSubagent branches), 385-388, 396-402, 416-422, 443-466.",
+        "status": "not_started"
+      },
+      "refactor": {
+        "description": "",
+        "status": "not_started"
+      },
+      "completed": false
+    },
+    {
+      "index": 7,
+      "name": "Step 7: plan-mode coverage (58% → 80%+)",
+      "red": {
+        "description": "Write tests for plan-mode/index.ts: test registerCommand handler, plan display rendering, plan creation via command, edit flow.",
+        "status": "not_started"
+      },
+      "green": {
+        "description": "Cover lines 57-63, 77-93, 98-102 by mocking command context and exercising the command handler.",
+        "status": "not_started"
+      },
+      "refactor": {
+        "description": "",
+        "status": "not_started"
+      },
+      "completed": false
+    },
+    {
+      "index": 8,
+      "name": "Step 8: todo extension — new test file (0 → integration)",
+      "red": {
+        "description": "Create todo/integration.test.ts with tests for the extension load/register cycle: verify the tool registers, verify execute returns expected result shapes for add/list/complete operations using mocked todo storage.",
+        "status": "not_started"
+      },
+      "green": {
+        "description": "Implement the integration test using the same pattern as other extensions integration.test.ts files.",
+        "status": "not_started"
+      },
+      "refactor": {
+        "description": "",
+        "status": "not_started"
+      },
+      "completed": false
+    },
+    {
+      "index": 9,
+      "name": "Step 9: wiki-stash extension — new test file (0 → integration)",
+      "red": {
+        "description": "Create wiki-stash/integration.test.ts with tests for the extension load/register cycle: verify tool registration, test stash/save/list operations with temp directory fixtures.",
+        "status": "not_started"
+      },
+      "green": {
+        "description": "Implement the integration test following the established pattern.",
+        "status": "not_started"
+      },
+      "refactor": {
+        "description": "",
+        "status": "not_started"
+      },
+      "completed": false
+    },
+    {
+      "index": 10,
+      "name": "Step 10: git-checkpoint extension — new test file (0 → integration)",
+      "red": {
+        "description": "Create git-checkpoint/integration.test.ts with tests for the extension load/register cycle: verify command registration, test checkpoint creation with mocked git operations.",
+        "status": "not_started"
+      },
+      "green": {
+        "description": "Implement the integration test following the established pattern.",
+        "status": "not_started"
+      },
+      "refactor": {
+        "description": "",
+        "status": "not_started"
+      },
+      "completed": false
+    }
+  ],
+  "notes": [
+    "Render tests should use piTuiRenderMock (not piTuiMock) for working render() methods",
+    "subagent.ts mocking requires careful AgentSession mock setup",
+    "Extensions with zero tests (todo, wiki-stash, git-checkpoint) need integration.test.ts only — excluded from CI via path-ignore-patterns",
+    "Target: 95%+ line coverage overall, no file below 80%"
+  ]
+}

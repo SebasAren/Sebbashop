@@ -51,3 +51,6 @@ lua_modules/
 .luarocks/
 wt/.config/worktrunk/approvals*
 .worktrees
+
+# Test coverage output
+coverage/

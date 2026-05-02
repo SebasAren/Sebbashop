@@ -1,16 +1,29 @@
 #!/usr/bin/env bash
-#MISE description="Run all tests"
+#MISE description="Run all tests with coverage"
 set -euo pipefail
 
 REPO_ROOT="${WT_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || echo .)}"
 
+# Shared coverage flags — reports text summary to stdout
+COV_FLAGS=(--coverage --coverage-reporter=text)
+
 echo "=== Bun Tests (extensions) ==="
 cd "$REPO_ROOT/pi/.pi/agent/extensions"
-bun test --path-ignore-patterns="**/integration.test.ts"
+bun test "${COV_FLAGS[@]}" --path-ignore-patterns="**/integration.test.ts"
 
 echo "=== Bun Tests (tdd-plan) ==="
 bun test "$REPO_ROOT/pi/.local/bin/tdd-plan.test.ts"
 
 echo "=== Bun Tests (wiki-search) ==="
 cd "$REPO_ROOT/obsidian/.local/lib/wiki-search"
-bun test
+bun test "${COV_FLAGS[@]}"
+
+echo "=== Bun Tests (wiki-core) ==="
+bun test "$REPO_ROOT/obsidian/.local/lib/wiki-core" "${COV_FLAGS[@]}"
+
+echo "=== Bun Tests (issue tracker) ==="
+bun test "$REPO_ROOT/obsidian/.local/lib/issue" "${COV_FLAGS[@]}"
+
+echo "=== Bun Tests (store-memory) ==="
+bun test "$REPO_ROOT/pi/.local/bin/store-memory.test.ts"
+bun test "$REPO_ROOT/pi/.local/bin/store-memory-skill.test.ts"

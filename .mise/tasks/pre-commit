@@ -4,13 +4,20 @@ set -euo pipefail
 
 failed=()
 
+capture_dir="$(mktemp -d)"
+trap 'rm -rf "$capture_dir"' EXIT
+
 run() {
     local task="$1"
-    if ! mise run "$task" > /dev/null 2>&1; then
+    local out_file="$capture_dir/$task.out"
+    if mise run "$task" > "$out_file" 2>&1; then
+        echo "✓ $task"
+    else
         echo "✗ $task"
         failed+=("$task")
-    else
-        echo "✓ $task"
+        echo "--- $task output ---"
+        cat "$out_file"
+        echo "--- end $task ---"
     fi
 }
 

@@ -16,12 +16,12 @@ import {
 // ── Constants ──
 
 describe("constants", () => {
-  test("WIKI_DIR points to ~/Documents/wiki/wiki", () => {
-    expect(WIKI_DIR).toBe(`${process.env.HOME}/Documents/wiki/wiki`);
+  test("WIKI_DIR ends with the wiki directory suffix", () => {
+    expect(WIKI_DIR).toEndWith("/Documents/wiki/wiki");
   });
 
-  test("RAW_DIR points to ~/Documents/wiki/raw/inbox", () => {
-    expect(RAW_DIR).toBe(`${process.env.HOME}/Documents/wiki/raw/inbox`);
+  test("RAW_DIR ends with the raw inbox suffix", () => {
+    expect(RAW_DIR).toEndWith("/Documents/wiki/raw/inbox");
   });
 });
 

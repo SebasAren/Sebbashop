@@ -23,6 +23,15 @@ jobs:
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y ripgrep
 
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            pi/.pi/agent/extensions/node_modules
+          key: bun-${{ hashFiles('pi/.pi/agent/extensions/bun.lock') }}
+          restore-keys: bun-
+
       - name: Install bun dependencies
         working-directory: pi/.pi/agent/extensions
         run: bun install --frozen-lockfile
