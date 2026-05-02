@@ -2,10 +2,40 @@
 #MISE description="TypeScript type check"
 set -euo pipefail
 
-echo "=== TypeScript Type Check ==="
 cd pi/.pi/agent/extensions
+
+# Collect projects with tsconfig.json
+projects=()
 for dir in */; do
-    [ -f "$dir/tsconfig.json" ] || continue
-    echo "Checking $dir..."
-    bunx tsc --noEmit -p "$dir/tsconfig.json"
+    [ -f "$dir/tsconfig.json" ] && projects+=("${dir%/}")
 done
+
+if [ ${#projects[@]} -eq 0 ]; then
+    echo "No TypeScript projects found"
+    exit 0
+fi
+
+echo "=== TypeScript Type Check (${#projects[@]} projects) ==="
+
+failed=0
+pids=()
+
+for dir in "${projects[@]}"; do
+    (
+        if ! output=$(bunx tsc --noEmit -p "$dir/tsconfig.json" 2>&1); then
+            echo "✗ $dir"
+            echo "$output"
+            exit 1
+        fi
+        echo "✓ $dir"
+    ) &
+    pids+=($!)
+done
+
+# Wait for all and track failures
+for pid in "${pids[@]}"; do
+    wait "$pid" || ((failed++))
+done
+
+echo ""
+[ $failed -eq 0 ] || { echo "Failed: $failed project(s)"; exit 1; }
