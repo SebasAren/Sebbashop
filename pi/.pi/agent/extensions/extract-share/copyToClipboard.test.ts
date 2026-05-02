@@ -1,75 +1,84 @@
-import { describe, it, expect, mock, beforeEach } from "bun:test";
+import { describe, it, expect, mock } from "bun:test";
 
-// Track mock spawnSync calls and results across tests
-const mockSpawnSync = mock(() => ({ status: 0, error: undefined }));
-
-// mock.module is hoisted by Bun — must be at top level
-mock.module("child_process", () => ({
-  spawnSync: mockSpawnSync,
-}));
-
-// Import after mock is registered
 import { copyToClipboard } from "./copyToClipboard";
 
+/**
+ * Create a mock spawnSync that returns success by default.
+ * Tests override with mockImplementation for specific scenarios.
+ */
+function mockSpawnSync() {
+  return mock(
+    (
+      _cmd: string,
+      _args: readonly string[],
+      _options?: any,
+    ): { status: number | null; error?: Error; signal?: string; stderr?: string } => ({
+      status: 0,
+      error: undefined,
+    }),
+  );
+}
+
 describe("copyToClipboard", () => {
-  beforeEach(() => {
-    mockSpawnSync.mockClear();
-  });
   it("tries wl-copy with image/png type first", () => {
-    mockSpawnSync.mockImplementation(() => ({ status: 0, error: undefined }));
-
+    const spawn = mockSpawnSync();
     const png = Buffer.from("fake-png-data");
-    copyToClipboard(png);
+    copyToClipboard(png, spawn);
 
-    expect(mockSpawnSync).toHaveBeenCalledWith("wl-copy", ["--type", "image/png"], {
+    expect(spawn).toHaveBeenCalledWith("wl-copy", ["--type", "image/png"], {
       input: png,
       stdio: ["pipe", "pipe", "pipe"],
+      encoding: "utf-8",
     });
   });
 
   it("falls back to xclip when wl-copy is not found", () => {
-    mockSpawnSync.mockImplementation((cmd: string) => {
-      if (cmd === "wl-copy") return { status: null, error: new Error("ENOENT") };
+    const spawn = mockSpawnSync();
+    spawn.mockImplementation((_cmd: string, _args: readonly string[], _options?: any) => {
+      if (_cmd === "wl-copy") return { status: null, error: new Error("ENOENT") };
       return { status: 0, error: undefined };
     });
 
     const png = Buffer.from("fake-png-data");
-    copyToClipboard(png);
+    copyToClipboard(png, spawn);
 
-    expect(mockSpawnSync).toHaveBeenCalledWith(
-      "xclip",
-      ["-selection", "clipboard", "-t", "image/png"],
-      { input: png, stdio: ["pipe", "pipe", "pipe"] },
-    );
+    expect(spawn).toHaveBeenCalledWith("xclip", ["-selection", "clipboard", "-t", "image/png"], {
+      input: png,
+      stdio: ["pipe", "pipe", "pipe"],
+      encoding: "utf-8",
+    });
   });
 
   it("falls back to pbcopy when wl-copy and xclip are not found", () => {
-    mockSpawnSync.mockImplementation((cmd: string) => {
-      if (cmd === "wl-copy" || cmd === "xclip") {
+    const spawn = mockSpawnSync();
+    spawn.mockImplementation((_cmd: string, _args: readonly string[], _options?: any) => {
+      if (_cmd === "wl-copy" || _cmd === "xclip") {
         return { status: null, error: new Error("ENOENT") };
       }
       return { status: 0, error: undefined };
     });
 
     const png = Buffer.from("fake-png-data");
-    copyToClipboard(png);
+    copyToClipboard(png, spawn);
 
-    expect(mockSpawnSync).toHaveBeenCalledWith("pbcopy", [], {
+    expect(spawn).toHaveBeenCalledWith("pbcopy", [], {
       input: png,
       stdio: ["pipe", "pipe", "pipe"],
+      encoding: "utf-8",
     });
   });
 
   it("returns immediately when a utility succeeds", () => {
-    mockSpawnSync.mockImplementation(() => ({ status: 0, error: undefined }));
+    const spawn = mockSpawnSync();
 
     const png = Buffer.from("fake-png-data");
-    expect(() => copyToClipboard(png)).not.toThrow();
-    expect(mockSpawnSync).toHaveBeenCalledTimes(1);
+    expect(() => copyToClipboard(png, spawn)).not.toThrow();
+    expect(spawn).toHaveBeenCalledTimes(1);
   });
 
   it("throws when a utility is killed by a signal", () => {
-    mockSpawnSync.mockImplementation(() => ({
+    const spawn = mockSpawnSync();
+    spawn.mockImplementation(() => ({
       status: null,
       error: undefined,
       signal: "SIGKILL",
@@ -77,28 +86,30 @@ describe("copyToClipboard", () => {
     }));
 
     const png = Buffer.from("fake-png-data");
-    expect(() => copyToClipboard(png)).toThrow("wl-copy was killed by signal SIGKILL");
+    expect(() => copyToClipboard(png, spawn)).toThrow("wl-copy was killed by signal SIGKILL");
   });
 
   it("throws when a utility exits with non-zero status", () => {
-    mockSpawnSync.mockImplementation(() => ({
+    const spawn = mockSpawnSync();
+    spawn.mockImplementation(() => ({
       status: 1,
       error: undefined,
       stderr: Buffer.from("clipboard locked"),
     }));
 
     const png = Buffer.from("fake-png-data");
-    expect(() => copyToClipboard(png)).toThrow("wl-copy failed (exit 1): clipboard locked");
+    expect(() => copyToClipboard(png, spawn)).toThrow("wl-copy failed (exit 1): clipboard locked");
   });
 
   it("throws a final error when no clipboard utility is available", () => {
-    mockSpawnSync.mockImplementation(() => ({
+    const spawn = mockSpawnSync();
+    spawn.mockImplementation(() => ({
       status: null,
       error: new Error("ENOENT"),
     }));
 
     const png = Buffer.from("fake-png-data");
-    expect(() => copyToClipboard(png)).toThrow(
+    expect(() => copyToClipboard(png, spawn)).toThrow(
       "No clipboard utility found. Install one of: wl-copy (wl-clipboard), xclip, or pbcopy.",
     );
   });

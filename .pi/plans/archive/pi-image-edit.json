@@ -4,126 +4,126 @@
   "context": "Add optional image_path parameter to generate_image tool for iterative image editing. Refactor api.ts to use OpenAI SDK. Use image-size for validation and aspect ratio detection.",
   "architecture": "Single tool with optional param. OpenAI SDK replaces raw fetch. image-size handles validation + dimensions.",
   "created": "2026-05-02T22:38:12.831Z",
-  "updated": "2026-05-02T22:42:44.602Z",
+  "updated": "2026-05-02T23:26:36.820Z",
   "steps": [
     {
       "index": 1,
       "name": "Install dependencies",
       "red": {
         "description": "Attempt to import 'openai' and 'image-size' in a test file — module not found error",
-        "status": "not_started"
+        "status": "done"
       },
       "green": {
         "description": "Add openai and image-size to pi-image/package.json dependencies, run bun install",
-        "status": "not_started"
+        "status": "done"
       },
       "refactor": {
         "description": "",
-        "status": "not_started"
+        "status": "skipped"
       },
-      "completed": false
+      "completed": true
     },
     {
       "index": 2,
       "name": "Refactor api.ts to use OpenAI SDK for text-only generation",
       "red": {
         "description": "Rewrite api.test.ts to mock OpenAI client instead of global fetch. Assert SDK receives correct params (model, messages with text content, modalities, image_config). Run tests — they fail because api.ts still uses raw fetch.",
-        "status": "not_started"
+        "status": "done"
       },
       "green": {
         "description": "Rewrite api.ts to instantiate OpenAI client with OpenRouter baseURL, replace fetch call with sdk.chat.completions.create(). Same function signature generateImageApi(prompt, model, aspectRatio).",
-        "status": "not_started"
+        "status": "done"
       },
       "refactor": {
         "description": "Remove old OpenRouter response interfaces, clean up unused types.",
-        "status": "not_started"
+        "status": "skipped"
       },
-      "completed": false
+      "completed": true
     },
     {
       "index": 3,
       "name": "Image validation utility (validate.ts)",
       "red": {
         "description": "Write validate.test.ts — test that validateImage('/path/to/real.png') returns {type:'png',width,height}, unsupported format (e.g. SVG/BMP) throws with clear message, missing file throws, non-image file throws. All fail because validate.ts doesn't exist.",
-        "status": "not_started"
+        "status": "done"
       },
       "green": {
         "description": "Implement validateImage using image-size library. Read file via image-size imageSize(), check type against whitelist (png, jpg, jpeg, webp, gif), return type + dimensions. Throw descriptive errors for each failure case.",
-        "status": "not_started"
+        "status": "done"
       },
       "refactor": {
         "description": "",
-        "status": "not_started"
+        "status": "done"
       },
-      "completed": false
+      "completed": true
     },
     {
       "index": 4,
       "name": "Add multimodal support to api.ts",
       "red": {
         "description": "Add test in api.test.ts for generateImageApi with optional imageBuffer + imageMimeType params — verify SDK receives multimodal user message content array with image_url part (data URL) and text part. Test fails because generateImageApi doesn't accept these params.",
-        "status": "not_started"
+        "status": "done"
       },
       "green": {
         "description": "Add optional imageBuffer and imageMimeType params to generateImageApi. When provided, build content as [{type:'image_url',image_url:{url:dataUrl}},{type:'text',text:prompt}] instead of plain string. When absent, keep text-only behavior.",
-        "status": "not_started"
+        "status": "done"
       },
       "refactor": {
         "description": "Extract message content builder into a helper function.",
-        "status": "not_started"
+        "status": "done"
       },
-      "completed": false
+      "completed": true
     },
     {
       "index": 5,
       "name": "Wire image_path in index.ts execute() + auto-detect aspect ratio",
       "red": {
         "description": "Add tests in index.test.ts for execute() with image_path: (a) missing file throws, (b) unsupported format throws, (c) valid image sends multimodal API call and returns saved result, (d) aspect ratio auto-detected from source dimensions (e.g. 1920x1080 → '16:9'), (e) explicit aspect_ratio param overrides detection. Tests fail — image_path not in schema, no file reading logic.",
-        "status": "not_started"
+        "status": "done"
       },
       "green": {
         "description": "Add image_path to TypeBox schema as optional String param. In execute(): if image_path provided, call validateImage to check type + get dimensions, read file as base64, compute aspect ratio from width/height (simplify GCD), pass to generateImageApi with image buffer. If no image_path, existing behavior. Update details to include whether it was an edit.",
-        "status": "not_started"
+        "status": "done"
       },
       "refactor": {
         "description": "",
-        "status": "not_started"
+        "status": "skipped"
       },
-      "completed": false
+      "completed": true
     },
     {
       "index": 6,
       "name": "Update tool description + renderCall for edit context",
       "red": {
         "description": "Update index.test.ts registration test to assert description contains guidance for both generate and edit modes. Assert renderCall shows the image_path when provided. Tests fail — description still says generate-only.",
-        "status": "not_started"
+        "status": "done"
       },
       "green": {
         "description": "Update tool description to explain both modes (omit image_path to generate, provide to edit). Update renderCall to append source image path when present.",
-        "status": "not_started"
+        "status": "done"
       },
       "refactor": {
         "description": "",
-        "status": "not_started"
+        "status": "skipped"
       },
-      "completed": false
+      "completed": true
     },
     {
       "index": 7,
       "name": "Edge cases and full integration",
       "red": {
         "description": "Write tests for: (a) image_path pointing to a valid file but corrupted contents (image-size returns type but file can't be base64-read cleanly), (b) API returns no images when editing (same as generate — should throw), (c) round-trip: generate then edit the output. Tests fail where edge cases aren't handled.",
-        "status": "not_started"
+        "status": "done"
       },
       "green": {
         "description": "Add error handling for file read failures, ensure no-images check works for edit path too.",
-        "status": "not_started"
+        "status": "done"
       },
       "refactor": {
         "description": "Review all tests for coverage gaps, clean up test helpers.",
-        "status": "not_started"
+        "status": "done"
       },
-      "completed": false
+      "completed": true
     }
   ],
   "notes": [],

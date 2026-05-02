@@ -10,6 +10,7 @@ export interface GenerateImageCallArgs {
   prompt: string;
   quality?: string;
   aspect_ratio?: string;
+  image_path?: string;
 }
 
 /** Details in the generate_image tool result. */
@@ -18,6 +19,7 @@ export interface GenerateImageDetails {
   aspectRatio: string;
   sizeBytes: number;
   path: string;
+  sourcePath?: string;
 }
 
 /** Render the generate_image tool call. */
@@ -27,11 +29,12 @@ export function renderCall(
   context: { lastComponent?: Component },
 ): Text {
   const quality = args.quality || "fast";
+  const editSuffix = args.image_path ? ` (edit: ${args.image_path})` : "";
   const text = (context.lastComponent as Text | undefined) ?? new Text("", 0, 0);
   text.setText(
     theme.fg("toolTitle", theme.bold("Generate Image ")) +
       theme.fg("dim", args.prompt) +
-      theme.fg("muted", ` [${quality}]`),
+      theme.fg("muted", ` [${quality}]${editSuffix}`),
   );
   return text;
 }
@@ -49,7 +52,10 @@ export function renderResult(
   const text = (context.lastComponent as Text | undefined) ?? new Text("", 0, 0);
   const d = result.details;
   if (d) {
-    text.setText(`Generated: ${d.path} (${d.model}, ${d.aspectRatio}, ${d.sizeBytes} bytes)`);
+    const sourceInfo = d.sourcePath ? ` from ${d.sourcePath}` : "";
+    text.setText(
+      `Generated: ${d.path} (${d.model}, ${d.aspectRatio}, ${d.sizeBytes} bytes${sourceInfo})`,
+    );
   } else {
     text.setText("Generated image (no details)");
   }

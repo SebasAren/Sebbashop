@@ -32,8 +32,8 @@ mock.module("marked", () => ({
   },
 }));
 
-mock.module("child_process", () => ({
-  spawnSync: mock(() => ({ status: 0, error: undefined })),
+mock.module("./copyToClipboard", () => ({
+  copyToClipboard: mock(() => {}),
 }));
 
 mock.module("./getLastAssistantMessage", () => ({

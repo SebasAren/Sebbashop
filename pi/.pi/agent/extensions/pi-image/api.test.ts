@@ -1,154 +1,122 @@
+/**
+ * Tests for the OpenRouter Image Generation API Client.
+ *
+ * These tests mock the OpenAI SDK (openai package) to verify that
+ * generateImageApi sends the correct parameters and parses responses.
+ */
+
 import { describe, it, expect, mock, beforeEach, afterEach } from "bun:test";
 
-// ── Setup mocked fetch ────────────────────────────────────────────────────
+// ── Mock OpenAI SDK ──────────────────────────────────────────────────────
+// Mock before importing api.ts so that `new OpenAI()` uses our mock class.
 
-const ORIGINAL_FETCH = globalThis.fetch;
-const mockFetch = mock<(url: string, options?: any) => Promise<Response>>();
+const mockCreate = mock<(params: any) => any>();
+let openAIConstructorArgs: { apiKey: string; baseURL?: string } | null = null;
 
-beforeEach(() => {
-  process.env.OPENROUTER_API_KEY = "test-openrouter-key";
-  mockFetch.mockReset();
-  globalThis.fetch = mockFetch;
-});
+mock.module("openai", () => ({
+  default: class OpenAI {
+    apiKey: string;
+    baseURL: string | undefined;
+    chat: { completions: { create: typeof mockCreate } };
 
-afterEach(() => {
-  globalThis.fetch = ORIGINAL_FETCH;
-  delete process.env.OPENROUTER_API_KEY;
-});
+    constructor(options: { apiKey: string; baseURL?: string }) {
+      openAIConstructorArgs = options;
+      this.apiKey = options.apiKey;
+      this.baseURL = options.baseURL;
+      this.chat = {
+        completions: {
+          create: mockCreate,
+        },
+      };
+    }
+  },
+}));
 
-// ── Tests ──────────────────────────────────────────────────────────────────
+// ── Import after mock setup ──────────────────────────────────────────────
+
+import { generateImageApi } from "./api";
+
+// ── Helpers ──────────────────────────────────────────────────────────────
+
+/**
+ * Build a mock OpenRouter response shape that matches what
+ * the OpenAI SDK returns for image-generation chat completions.
+ */
+function mockResponse(images?: Array<{ image_url: { url: string } }>): Record<string, any> {
+  return {
+    id: "chatcmpl-test-123",
+    object: "chat.completion",
+    created: 1_234_567_890,
+    model: "test-model",
+    choices: [
+      {
+        index: 0,
+        finish_reason: "stop",
+        message: {
+          role: "assistant",
+          content: "Here's your generated image",
+          ...(images ? { images } : {}),
+        },
+      },
+    ],
+    usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 },
+  };
+}
+
+// ── Tests ─────────────────────────────────────────────────────────────────
 
 describe("generateImageApi", () => {
-  it("sends a POST request to the OpenRouter chat completions endpoint", async () => {
-    mockFetch.mockImplementation(async (_url, _options) => {
-      return new Response(
-        JSON.stringify({
-          choices: [
-            {
-              message: {
-                role: "assistant",
-                content: "Here's your image",
-                images: [
-                  {
-                    type: "image_url",
-                    image_url: {
-                      url: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...",
-                    },
-                  },
-                ],
-              },
-            },
-          ],
-        }),
-        { status: 200, headers: { "Content-Type": "application/json" } },
-      );
-    });
-
-    const { generateImageApi } = await import("./api");
-    await generateImageApi("a sunset", "fast", "16:9");
-
-    expect(mockFetch).toHaveBeenCalledTimes(1);
-    // Verify correct endpoint
-    expect(mockFetch.mock.calls[0][0]).toBe("https://openrouter.ai/api/v1/chat/completions");
-    expect(mockFetch.mock.calls[0][1].method).toBe("POST");
+  beforeEach(() => {
+    process.env.OPENROUTER_API_KEY = "test-openrouter-key";
+    openAIConstructorArgs = null;
+    mockCreate.mockReset();
   });
 
-  it("includes Authorization header with the API key", async () => {
-    mockFetch.mockImplementation(async (_url, _options) => {
-      return new Response(
-        JSON.stringify({
-          choices: [
-            {
-              message: {
-                role: "assistant",
-                content: "Here's your image",
-                images: [
-                  {
-                    type: "image_url",
-                    image_url: {
-                      url: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...",
-                    },
-                  },
-                ],
-              },
-            },
-          ],
-        }),
-        { status: 200, headers: { "Content-Type": "application/json" } },
-      );
-    });
-
-    const { generateImageApi } = await import("./api");
-    await generateImageApi("a sunset", "fast", "16:9");
-
-    const headers = mockFetch.mock.calls[0][1].headers;
-    expect(headers.Authorization).toBe("Bearer test-openrouter-key");
-    expect(headers["Content-Type"]).toBe("application/json");
+  afterEach(() => {
+    delete process.env.OPENROUTER_API_KEY;
   });
 
-  it("sends model, prompt, modalities, and aspect ratio in the request body", async () => {
-    let requestBody: any;
-    mockFetch.mockImplementation(async (_url, options) => {
-      requestBody = JSON.parse(options.body);
-      return new Response(
-        JSON.stringify({
-          choices: [
-            {
-              message: {
-                role: "assistant",
-                content: "Here's your image",
-                images: [
-                  {
-                    type: "image_url",
-                    image_url: {
-                      url: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...",
-                    },
-                  },
-                ],
-              },
-            },
-          ],
-        }),
-        { status: 200, headers: { "Content-Type": "application/json" } },
-      );
-    });
+  // ── SDK configuration ───────────────────────────────────────────────
 
-    const { generateImageApi } = await import("./api");
-    await generateImageApi("a sunset", "fast", "16:9");
+  it("creates OpenAI client with OpenRouter baseURL and the API key", async () => {
+    mockCreate.mockReturnValue(
+      mockResponse([{ image_url: { url: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..." } }]),
+    );
 
-    expect(requestBody.model).toBe("fast");
-    expect(requestBody.messages[0].role).toBe("user");
-    expect(requestBody.messages[0].content).toBe("a sunset");
-    expect(requestBody.modalities).toEqual(["image", "text"]);
-    expect(requestBody.image_config).toEqual({ aspect_ratio: "16:9" });
+    await generateImageApi("a sunset over mountains", "fast", "16:9");
+
+    expect(openAIConstructorArgs).not.toBeNull();
+    expect(openAIConstructorArgs!.baseURL).toBe("https://openrouter.ai/api/v1/");
+    expect(openAIConstructorArgs!.apiKey).toBe("test-openrouter-key");
   });
 
-  it("returns images array with base64 data and mimeType", async () => {
-    mockFetch.mockImplementation(async (_url, _options) => {
-      return new Response(
-        JSON.stringify({
-          choices: [
-            {
-              message: {
-                role: "assistant",
-                content: "Here's your image",
-                images: [
-                  {
-                    type: "image_url",
-                    image_url: {
-                      url: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...",
-                    },
-                  },
-                ],
-              },
-            },
-          ],
-        }),
-        { status: 200, headers: { "Content-Type": "application/json" } },
-      );
+  // ── Request parameters ──────────────────────────────────────────────
+
+  it("sends model, text content, modalities, and aspect_ratio to the SDK", async () => {
+    let createParams: any = null;
+    mockCreate.mockImplementation((params: any) => {
+      createParams = params;
+      return mockResponse([
+        { image_url: { url: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..." } },
+      ]);
     });
 
-    const { generateImageApi } = await import("./api");
+    await generateImageApi("a sunset over mountains", "fast", "16:9");
+
+    expect(mockCreate).toHaveBeenCalledTimes(1);
+    expect(createParams.model).toBe("fast");
+    expect(createParams.messages).toEqual([{ role: "user", content: "a sunset over mountains" }]);
+    expect(createParams.modalities).toEqual(["image", "text"]);
+    expect(createParams.image_config).toEqual({ aspect_ratio: "16:9" });
+  });
+
+  // ── Response parsing ────────────────────────────────────────────────
+
+  it("returns images array with base64 data and mimeType from the SDK response", async () => {
+    mockCreate.mockReturnValue(
+      mockResponse([{ image_url: { url: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..." } }]),
+    );
+
     const result = await generateImageApi("a sunset", "fast", "16:9");
 
     expect(result.images).toHaveLength(1);
@@ -156,33 +124,88 @@ describe("generateImageApi", () => {
     expect(result.images[0].mimeType).toBe("image/png");
   });
 
-  it("throws on non-OK response", async () => {
-    mockFetch.mockImplementation(async () => {
-      return new Response("Unauthorized", { status: 401 });
+  it("handles multiple images in the response", async () => {
+    mockCreate.mockReturnValue(
+      mockResponse([
+        { image_url: { url: "data:image/png;base64,aaaa" } },
+        { image_url: { url: "data:image/jpeg;base64,bbbb" } },
+      ]),
+    );
+
+    const result = await generateImageApi("multiple images", "fast", "1:1");
+
+    expect(result.images).toHaveLength(2);
+    expect(result.images[0].data).toBe("aaaa");
+    expect(result.images[0].mimeType).toBe("image/png");
+    expect(result.images[1].data).toBe("bbbb");
+    expect(result.images[1].mimeType).toBe("image/jpeg");
+  });
+
+  // ── Multimodal (image editing) ──────────────────────────────────────
+
+  it("sends multimodal content with image data URL when imageBuffer is provided", async () => {
+    let createParams: any = null;
+    mockCreate.mockImplementation((params: any) => {
+      createParams = params;
+      return mockResponse([
+        { image_url: { url: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..." } },
+      ]);
     });
 
-    const { generateImageApi } = await import("./api");
+    const imageBuffer = Buffer.from("fake-image-binary-data");
+    await generateImageApi("make it a sunset", "fast", "16:9", imageBuffer, "image/png");
+
+    expect(mockCreate).toHaveBeenCalledTimes(1);
+    expect(createParams.messages[0].content).toEqual([
+      {
+        type: "image_url",
+        image_url: { url: "data:image/png;base64,ZmFrZS1pbWFnZS1iaW5hcnktZGF0YQ==" },
+      },
+      { type: "text", text: "make it a sunset" },
+    ]);
+  });
+
+  it("sends text-only content when no imageBuffer is provided (backward compat)", async () => {
+    let createParams: any = null;
+    mockCreate.mockImplementation((params: any) => {
+      createParams = params;
+      return mockResponse([
+        { image_url: { url: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..." } },
+      ]);
+    });
+
+    await generateImageApi("a sunset over mountains", "fast", "16:9");
+
+    expect(createParams.messages).toEqual([{ role: "user", content: "a sunset over mountains" }]);
+  });
+
+  it("handles JPEG image buffer correctly", async () => {
+    let createParams: any = null;
+    mockCreate.mockImplementation((params: any) => {
+      createParams = params;
+      return mockResponse([{ image_url: { url: "data:image/png;base64,aaaa" } }]);
+    });
+
+    const imageBuffer = Buffer.from("jpeg-data");
+    await generateImageApi("make it better", "best", "1:1", imageBuffer, "image/jpeg");
+
+    expect(createParams.messages[0].content[0].image_url.url).toBe(
+      "data:image/jpeg;base64,anBlZy1kYXRh",
+    );
+    expect(createParams.messages[0].content[1].text).toBe("make it better");
+  });
+
+  // ── Error handling ──────────────────────────────────────────────────
+
+  it("throws when the SDK call fails", async () => {
+    mockCreate.mockRejectedValue(new Error("API rate limit exceeded"));
+
     await expect(generateImageApi("a sunset", "fast", "16:9")).rejects.toThrow();
   });
 
-  it("returns empty images array when response has no images", async () => {
-    mockFetch.mockImplementation(async (_url, _options) => {
-      return new Response(
-        JSON.stringify({
-          choices: [
-            {
-              message: {
-                role: "assistant",
-                content: "No image generated",
-              },
-            },
-          ],
-        }),
-        { status: 200, headers: { "Content-Type": "application/json" } },
-      );
-    });
+  it("returns empty images array when the response has no images", async () => {
+    mockCreate.mockReturnValue(mockResponse());
 
-    const { generateImageApi } = await import("./api");
     const result = await generateImageApi("a sunset", "fast", "16:9");
 
     expect(result.images).toHaveLength(0);
@@ -190,7 +213,6 @@ describe("generateImageApi", () => {
 
   it("throws when OPENROUTER_API_KEY is not set", async () => {
     delete process.env.OPENROUTER_API_KEY;
-    const { generateImageApi } = await import("./api");
 
     await expect(generateImageApi("a sunset", "fast", "16:9")).rejects.toThrow(
       /OPENROUTER_API_KEY/,
