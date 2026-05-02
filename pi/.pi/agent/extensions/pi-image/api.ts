@@ -32,7 +32,7 @@ function parseDataUrl(dataUrl: string): { mimeType: string; data: string } {
  * Call the OpenRouter chat completions API to generate an image.
  *
  * @param prompt - Text description of the image to generate
- * @param model - Model identifier (e.g., "bytedance-research/seedream-4.5")
+ * @param model - Model identifier (e.g., "bytedance-seed/seedream-4.5")
  * @param aspectRatio - Aspect ratio string (e.g., "1:1", "16:9")
  * @returns Object containing an array of generated images with base64 data and MIME type
  */

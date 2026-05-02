@@ -16,7 +16,7 @@ export { saveImageToTemp } from "./save";
 export type { GenerateImageApiResult } from "./api";
 export type { SaveImageResult } from "./save";
 
-const DEFAULT_MODEL_FAST = "bytedance-research/seedream-4.5";
+const DEFAULT_MODEL_FAST = "bytedance-seed/seedream-4.5";
 const DEFAULT_MODEL_BEST = "black-forest-labs/flux-2-max";
 
 interface ExecuteParams {
