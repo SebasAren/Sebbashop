@@ -9,7 +9,23 @@ cd ~/dotfiles
 stow kitty
 ```
 
-This symlinks `kitty/.config/kitty/kitty.conf` → `~/.config/kitty/kitty.conf`.
+This symlinks:
+- `kitty/.config/kitty/kitty.conf` → `~/.config/kitty/kitty.conf`
+- `kitty/.config/xdg-terminals.list` → `~/.config/xdg-terminals.list`
+
+## Default terminal
+
+Kitty is set as the GNOME default terminal (`Ctrl+Alt+T`). This is configured via:
+
+1. **`xdg-terminals.list`** — tells `xdg-terminal-exec` (freedesktop spec) which terminal to launch when apps request one
+2. **gsettings** — tells GNOME Shell which terminal to open on `Ctrl+Alt+T`
+
+These are applied automatically by stowing and running:
+
+```bash
+gsettings set org.gnome.desktop.default-applications.terminal exec kitty
+gsettings set org.gnome.desktop.default-applications.terminal exec-arg -
+```
 
 ## Architecture
 
