@@ -22,6 +22,10 @@ pi/.pi/agent/sessions/
 pi/.pi/agent/settings.json
 pi/.pi/agent/auth.json
 
+# Tmux runtime artifacts
+tmux-client-*.log
+tmux-server-*.log
+
 # Taskplane runtime artifacts (machine-specific, do not commit)
 .pi/batch-state.json
 .pi/batch-history.json
