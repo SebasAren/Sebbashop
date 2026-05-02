@@ -31,13 +31,26 @@ fi
 
 # --- TypeScript/JavaScript ---
 ts_files=()
+ts_ext_files=()
 for f in "${files[@]}"; do
-    [[ "$f" == *.ts || "$f" == *.tsx || "$f" == *.js || "$f" == *.jsx ]] && ts_files+=("$f")
+    [[ "$f" == *.ts || "$f" == *.tsx || "$f" == *.js || "$f" == *.jsx ]] || continue
+    ts_files+=("$f")
+    # Only files under pi/.pi/agent/extensions have an ESLint config
+    [[ "$f" == pi/.pi/agent/extensions/* ]] && ts_ext_files+=("$f")
 done
 if [ ${#ts_files[@]} -gt 0 ]; then
     echo "→ TS/JS: ${ts_files[*]}"
-    (cd "$REPO_ROOT/pi/.pi/agent/extensions" && prettier --write "${ts_files[@]}") && recheck+=("${ts_files[@]}") || failed+=("prettier")
-    (cd "$REPO_ROOT/pi/.pi/agent/extensions" && bunx eslint --fix "${ts_files[@]}") || failed+=("eslint")
+    # Prettier runs from repo root — paths are repo-relative
+    prettier --write "${ts_files[@]}" && recheck+=("${ts_files[@]}") || failed+=("prettier")
+    # ESLint only has a config in the extensions directory
+    if [ ${#ts_ext_files[@]} -gt 0 ]; then
+        # Strip the pi/.pi/agent/extensions/ prefix so paths are relative to extensions dir
+        ts_ext_rel=()
+        for f in "${ts_ext_files[@]}"; do
+            ts_ext_rel+=("${f#pi/.pi/agent/extensions/}")
+        done
+        (cd "$REPO_ROOT/pi/.pi/agent/extensions" && bunx eslint --fix "${ts_ext_rel[@]}") || failed+=("eslint")
+    fi
 fi
 
 # --- Python ---
@@ -69,7 +82,7 @@ for f in "${files[@]}"; do
 done
 if [ ${#prettier_files[@]} -gt 0 ]; then
     echo "→ Other (prettier): ${prettier_files[*]}"
-    prettier --config "$REPO_ROOT/pi/.pi/agent/extensions/.prettierrc.json" --write "${prettier_files[@]}" && recheck+=("${prettier_files[@]}") || failed+=("prettier")
+    prettier --write "${prettier_files[@]}" && recheck+=("${prettier_files[@]}") || failed+=("prettier")
 fi
 
 # Re-stage files modified by formatters
