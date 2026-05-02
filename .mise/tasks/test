@@ -9,21 +9,21 @@ COV_FLAGS=(--coverage --coverage-reporter=text)
 
 echo "=== Bun Tests (extensions) ==="
 cd "$REPO_ROOT/pi/.pi/agent/extensions"
-bun test "${COV_FLAGS[@]}" --path-ignore-patterns="**/integration.test.ts"
+bun test --parallel "${COV_FLAGS[@]}" --path-ignore-patterns="**/integration.test.ts"
 
 echo "=== Bun Tests (tdd-plan) ==="
-bun test "$REPO_ROOT/pi/.local/bin/tdd-plan.test.ts"
+bun test --parallel "$REPO_ROOT/pi/.local/bin/tdd-plan.test.ts"
 
 echo "=== Bun Tests (wiki-search) ==="
 cd "$REPO_ROOT/obsidian/.local/lib/wiki-search"
-bun test "${COV_FLAGS[@]}"
+bun test --parallel "${COV_FLAGS[@]}"
 
 echo "=== Bun Tests (wiki-core) ==="
-bun test "$REPO_ROOT/obsidian/.local/lib/wiki-core" "${COV_FLAGS[@]}"
+bun test --parallel "$REPO_ROOT/obsidian/.local/lib/wiki-core" "${COV_FLAGS[@]}"
 
 echo "=== Bun Tests (issue tracker) ==="
-bun test "$REPO_ROOT/obsidian/.local/lib/issue" "${COV_FLAGS[@]}"
+bun test --parallel "$REPO_ROOT/obsidian/.local/lib/issue" "${COV_FLAGS[@]}"
 
 echo "=== Bun Tests (store-memory) ==="
-bun test "$REPO_ROOT/pi/.local/bin/store-memory.test.ts"
-bun test "$REPO_ROOT/pi/.local/bin/store-memory-skill.test.ts"
+bun test --parallel "$REPO_ROOT/pi/.local/bin/store-memory.test.ts"
+bun test --parallel "$REPO_ROOT/pi/.local/bin/store-memory-skill.test.ts"

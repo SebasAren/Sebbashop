@@ -26,7 +26,7 @@ pi/.pi/agent/extensions/
 - **Integration tests**: one `integration.test.ts` per extension — verifies the extension loads, registers its tools/commands, and handles missing API keys gracefully.
 - **Runner**: `bun test` from this directory (recurses into all workspace packages). No Jest, no Vitest.
 
-**Shared mocks live in [`shared/src/test-mocks.ts`](shared/src/test-mocks.ts).** Use them — never write inline mocks for `@mariozechner/pi-coding-agent`, `@mariozechner/pi-tui`, or `typebox`. `mock.module()` is global (last registration wins), so missing exports in one test will break others.
+**Shared mocks live in [`shared/src/test-mocks.ts`](shared/src/test-mocks.ts).** Use them for consistency — each factory (`piTuiMock`, `piCodingAgentMock`, `typeboxMock`) covers all exports an extension needs.
 
 ## Development Loop
 
@@ -38,7 +38,7 @@ bun install
 for dir in */; do [ -f "$dir/tsconfig.json" ] && npx tsc --noEmit -p "$dir/tsconfig.json"; done
 
 # Run all tests
-bun test
+bun test --parallel
 
 # Lint
 npx eslint .
@@ -52,4 +52,4 @@ CI runs the same three steps on every push ([`.github/workflows/test.yml`](../..
 2. Write `integration.test.ts` first — mock external deps via `@pi-ext/shared/test-mocks`, verify `registerTool`/`registerCommand` is called.
 3. Implement `index.ts`.
 4. Add `"<name>"` to the `workspaces` array in [`package.json`](package.json).
-5. Run `bun install && bun test` and the typecheck loop above.
+5. Run `bun install && bun test --parallel` and the typecheck loop above.

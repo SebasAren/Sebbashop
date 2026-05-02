@@ -287,7 +287,7 @@ The TypeScript surface (Pi agent extensions and standalone CLIs) is covered by *
 # Pi extensions (typecheck + tests)
 cd pi/.pi/agent/extensions
 for dir in */; do [ -f "$dir/tsconfig.json" ] && npx tsc --noEmit -p "$dir/tsconfig.json"; done
-bun test
+bun test --parallel
 
 # Standalone CLIs
 bun test pi/.local/bin/tdd-plan.test.ts

@@ -147,10 +147,10 @@ cd pi/.pi/agent/extensions
 for dir in */; do [ -f "$dir/tsconfig.json" ] && npx tsc --noEmit -p "$dir/tsconfig.json"; done
 
 # Run all tests
-bun test
+bun test --parallel
 
 # Run specific extension tests
-bun test explore/
+bun test --parallel explore/
 ```
 
 ### Adding a New Extension
