@@ -18,8 +18,9 @@ stow */                    # install all
 ```
 nvim/.config/nvim/         # Neovim            → nvim/README.md
 bashrc/                    # Bash config        → bashrc/AGENTS.md
-tmux/.config/tmux/         # Tmux               → tmux/README.md
-ghostty/.config/ghostty/   # Ghostty             → ghostty/README.md
+tmux/.config/tmux/         # Tmux (deprecated, kept for fallback)
+ghostty/.config/ghostty/   # Ghostty (deprecated, kept for fallback)
+kitty/.config/kitty/       # Kitty             → kitty/README.md
 wt/.config/worktrunk/      # Worktrunk
 pi/.pi/                    # Pi agent           → pi/.pi/README.md
 homebrew/                  # brew-sync CLI      → homebrew/AGENTS.md
@@ -47,8 +48,10 @@ Tool directories may have an `AGENTS.md` (path-scoped agent instructions) or a `
 | LSP server config | `nvim/.config/nvim/lsp/*.lua` |
 | Shell aliases | `bashrc/.bashrc.d/alias` |
 | Shell secrets | `bashrc/.bashrc.d/secrets` |
-| Tmux config | `tmux/.config/tmux/tmux.conf` |
-| Tmux docs | `tmux/README.md` |
+| Tmux config | `tmux/.config/tmux/tmux.conf` (legacy) |
+| Tmux docs | `tmux/README.md` (legacy) |
+| Kitty config | `kitty/.config/kitty/kitty.conf` |
+| Kitty docs | `kitty/README.md` |
 | Mise tasks | `.mise/tasks/` |
 | Ghostty config | `ghostty/.config/ghostty/config.ghostty` |
 | Ghostty docs | `ghostty/README.md` |

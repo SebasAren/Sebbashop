@@ -1,6 +1,6 @@
 #!/bin/bash
 export EDITOR=nvim
-export PI_TMUX_IMAGES=1
+# PI_TMUX_IMAGES was a rejected pi upstream PR; no longer needed with Kitty.
 source ~/.bashenv
 
 # fzf key bindings (Ctrl+R history, Ctrl+T files, Alt+C cd)

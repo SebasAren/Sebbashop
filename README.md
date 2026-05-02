@@ -13,9 +13,11 @@ Includes [Pi agent extensions](#pi-agent-extensions) that delegate codebase expl
 
 | Directory | Tool | Purpose |
 |-----------|------|---------|
+| `kitty/` | **Kitty** | GPU-accelerated terminal + native multiplexer (replaces tmux + Ghostty). Inline images in pi Just Work™ → [details](kitty/README.md) |
 | `pi/` | **Pi Agent** | Coding assistant with 18 custom extensions (explore subagent, librarian, wiki integration, fuzzy edit, and more) |
 | `nvim/` | Neovim | Lazy.nvim, 15 LSP servers, blink.cmp completion, CodeCompanion → [details](nvim/README.md) |
-| `tmux/` | Tmux | Alt-based keybindings, Tokyo Night theme → [details](tmux/README.md) |
+| `tmux/` | Tmux | (Legacy) Alt-based keybindings, Tokyo Night theme → [details](tmux/README.md) |
+| `ghostty/` | Ghostty | (Legacy) GPU-accelerated terminal. Replaced by Kitty |
 | `bashrc/` | Bash | Modular shell config: aliases, secrets, fzf, mise, worktrunk integration |
 | `wt/` | Worktrunk | Git worktree management with AI-generated commit messages |
 | `homebrew/` | Homebrew | `brew-sync` CLI + Brewfile for personal packages |
@@ -46,7 +48,7 @@ GNU Stow creates symlinks from the repo to your home directory. Each top-level d
 
 ```bash
 # Install specific tools
-stow nvim tmux bashrc
+stow kitty nvim bashrc
 
 # Install everything
 stow */
@@ -86,13 +88,15 @@ cp bashrc/.secrets.tpl ~/.secrets.tpl
 
 Secrets are only resolved when tools like `pi`, `nvim`, or `wt` actually need them — not on shell startup.
 
-### 5. Install Tmux plugins
+### 5. Install (legacy) Tmux plugins
 
 On first launch, TPM auto-installs. If it doesn't:
 
 ```
 prefix + I    # (Ctrl+a, then Shift+i)
 ```
+
+Note: Kitty is the preferred terminal; tmux is kept for SSH fallback sessions only.
 
 ## Pi Agent Extensions
 
@@ -203,11 +207,17 @@ Running the main model (e.g. Claude) to grep through files burns tokens on outpu
 
 Lazy.nvim with 15 LSP servers, blink.cmp completion (Codestral + Minuet-AI), conform.nvim formatting, nvim-dap debugging, and CodeCompanion.nvim AI coding.
 
-### Tmux
+### Tmux (Legacy)
 
 → **[Full details in `tmux/README.md`](tmux/README.md)**
 
 Alt-based daily keybindings (no prefix for common ops), vi copy mode with `wl-copy`, Tokyo Night theme, worktrunk popup integration.
+
+### Kitty
+
+→ **[Full details in `kitty/README.md`](kitty/README.md)**
+
+GPU-accelerated terminal that replaces both Ghostty and tmux. Provides native tabs/splits (no prefix needed — all Alt-based like tmux), Tokyo Night theme, and **native Kitty Graphics Protocol support** which makes pi inline images work without passthrough hacks.
 
 ### Shell (Bash)
 
@@ -219,7 +229,7 @@ Modular config in `bashrc/.bashrc.d/`. Each file handles one concern:
 | `alias` | Short aliases |
 | `mise` | Activate mise runtime manager |
 | `secrets` | Lazy Proton Pass integration |
-| `tmux` | Auto-attach/create tmux sessions |
+| `tmux` | Auto-attach/create tmux sessions (skipped inside Kitty) |
 | `wt` | Worktrunk shell integration (directive file pattern) |
 | `wpi` | Worktree + Pi agent workflow |
 | `fnox` | fnox reencryption helper |
@@ -297,13 +307,17 @@ Run `mise run pre-commit` before committing — it executes format + lint + type
 ├── pi/.pi/                      # Pi agent
 │   ├── agent/extensions/        # 18 custom extensions
 │   └── README.md                # Extension documentation
+├── kitty/.config/kitty/         # Kitty (terminal + multiplexer)
+│   └── kitty.conf               # Main config
 ├── nvim/.config/nvim/           # Neovim
 │   ├── lua/config/              # Core config (LSP, keymaps, diagnostics)
 │   ├── lua/plugins/             # Plugin specs (Lazy.nvim)
 │   └── lsp/                     # Per-server LSP configs
-├── tmux/.config/tmux/           # Tmux
+├── tmux/.config/tmux/           # Tmux (legacy)
 │   ├── tmux.conf                # Main config
 │   └── scripts/                 # Popup scripts (wt integration)
+├── ghostty/.config/ghostty/     # Ghostty (legacy)
+│   └── config.ghostty           # Ghostty config
 ├── bashrc/                      # Bash
 │   ├── .bashenv                 # Global env vars
 │   └── .bashrc.d/               # Modular sourced scripts

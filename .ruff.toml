@@ -1,0 +1,4 @@
+# Vendored / third-party code — do not lint or auto-format
+exclude = [
+    "kitty/.config/kitty/kitty_grab/",
+]
