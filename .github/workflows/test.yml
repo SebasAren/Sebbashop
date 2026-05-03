@@ -36,5 +36,8 @@ jobs:
         working-directory: pi/.pi/agent/extensions
         run: bun install --frozen-lockfile
 
+      - name: Install luacheck (Lua linter)
+        run: luarocks install luacheck 2>/dev/null || true
+
       - name: Run mise check
         run: mise run check
