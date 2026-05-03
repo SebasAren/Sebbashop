@@ -1,5 +1,6 @@
 require("config.lazy")
 
+-- REVIEW-TEST: Added for testing the new review plugin
 require("config.filetypes")
 require("config.settings")
 require("config.mappings")

@@ -241,13 +241,21 @@ function M.open_file_diff(file_path, base_ref)
   if not ok or vim.v.shell_error ~= 0 then
     -- New file: show empty. Use one empty line so diff has something to show
     base_content = { "" }
+  else
+    -- systemlist may return a trailing empty string for newline-terminated output,
+    -- which creates a line-count mismatch against the real file buffer. Strip it.
+    while #base_content > 0 and base_content[#base_content] == "" do
+      table.remove(base_content)
+    end
   end
 
   -- Open the working tree file in the current window
   vim.cmd("edit " .. vim.fn.fnameescape(file_path))
   local work_bufnr = vim.api.nvim_get_current_buf()
   local work_winnr = vim.api.nvim_get_current_win()
-  vim.wo[work_winnr].diff = true
+  vim.cmd("diffthis")
+  vim.wo[work_winnr].foldenable = true
+  vim.wo[work_winnr].foldmethod = "diff"
 
   -- Create a new buffer for the base version
   local base_bufnr = vim.api.nvim_create_buf(false, true)
@@ -262,8 +270,13 @@ function M.open_file_diff(file_path, base_ref)
   vim.cmd("leftabove vertical split")
   local base_winnr = vim.api.nvim_get_current_win()
   vim.api.nvim_win_set_buf(base_winnr, base_bufnr)
-  vim.wo[base_winnr].diff = true
+  vim.cmd("diffthis")
   vim.wo[base_winnr].scrollbind = true
+  vim.wo[base_winnr].foldenable = true
+  vim.wo[base_winnr].foldmethod = "diff"
+
+  -- Recompute diff after both buffers are in diff mode
+  vim.cmd("diffupdate")
 
   -- Go back to the working tree window and enable scrollbind
   vim.api.nvim_set_current_win(work_winnr)

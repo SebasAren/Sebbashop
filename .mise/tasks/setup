@@ -7,6 +7,8 @@ mise install
 
 echo "=== Install luacheck ==="
 luarocks install luacheck 2>/dev/null || true
+# Also install for Lua 5.4 since luacheck 1.2.0 is incompatible with Lua 5.5
+luarocks --lua-version 5.4 install luacheck 2>/dev/null || true
 
 echo "=== Install Pi extension deps ==="
 (cd pi/.pi/agent/extensions && bun install)

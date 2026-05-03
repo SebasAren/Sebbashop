@@ -9,6 +9,7 @@ return {
       })
     end,
   }, -- indent lines
+  -- REVIEW-TEST: added comment for review testing
   {
     "nvim-treesitter/nvim-treesitter",
     lazy = false,

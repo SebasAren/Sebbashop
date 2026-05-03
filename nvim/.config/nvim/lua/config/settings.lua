@@ -1,4 +1,5 @@
 -- Display
+-- REVIEW-TEST: small tweak for testing the review plugin
 vim.o.termguicolors = true
 vim.o.showmatch = true -- show matching brackets
 vim.o.scrolloff = 3 -- always show 3 rows from edge of the screen
@@ -33,7 +34,8 @@ vim.o.mps = vim.o.mps .. ",<:>"
 -- White characters
 vim.o.autoindent = true
 vim.o.smartindent = true
-vim.o.tabstop = 2 -- 1 tab = 2 spaces
+-- REVIEW-TEST: widened from 2 to 4 for testing
+vim.o.tabstop = 4 -- 1 tab = 4 spaces
 vim.o.shiftwidth = 2 -- indentation rule
 vim.o.formatoptions = "qnj1" -- q=comment, n=numbered lists, j=rm comment on join, 1=dont break 1-letter words
 vim.o.expandtab = true -- expand tab to spaces
