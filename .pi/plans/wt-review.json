@@ -1,0 +1,154 @@
+{
+  "title": "Worktree Diff Review with Sidebar and Annotations",
+  "slug": "wt-review",
+  "context": "Build a Neovim plugin for reviewing worktree diffs with a file sidebar, side-by-side diff mode, and integration with the existing review/init.lua comment system.",
+  "architecture": "New wt_review.lua module that integrates with git_diff_review, review/init.lua, and wt CLI",
+  "created": "2026-05-03T11:12:20.114Z",
+  "updated": "2026-05-03T11:16:59.910Z",
+  "steps": [
+    {
+      "index": 1,
+      "name": "Module skeleton + resolve_base_ref",
+      "red": {
+        "description": "Create tests/wt_review_spec.lua that fails because require('wt_review') is missing and resolve_base_ref returns wrong value",
+        "status": "in_progress"
+      },
+      "green": {
+        "description": "Create lua/wt_review/init.lua with module skeleton, resolve_base_ref using wt CLI + merge-base",
+        "status": "not_started"
+      },
+      "refactor": {
+        "description": "",
+        "status": "not_started"
+      },
+      "completed": false
+    },
+    {
+      "index": 2,
+      "name": "get_changed_files with diff stats",
+      "red": {
+        "description": "Test that get_changed_files returns sorted list with +N/-M stats",
+        "status": "not_started"
+      },
+      "green": {
+        "description": "Implement get_changed_files using git diff --numstat, merge untracked files",
+        "status": "not_started"
+      },
+      "refactor": {
+        "description": "",
+        "status": "not_started"
+      },
+      "completed": false
+    },
+    {
+      "index": 3,
+      "name": "Sidebar buffer creation and rendering",
+      "red": {
+        "description": "Test that open_sidebar creates a buffer with correct file list and highlights",
+        "status": "not_started"
+      },
+      "green": {
+        "description": "Implement sidebar buffer with 'wtreview' filetype, render files with +N/-M stats",
+        "status": "not_started"
+      },
+      "refactor": {
+        "description": "",
+        "status": "not_started"
+      },
+      "completed": false
+    },
+    {
+      "index": 4,
+      "name": "Diff buffer setup for a selected file",
+      "red": {
+        "description": "Verify diff mode opens two buffers (working tree vs base version) with correct content",
+        "status": "not_started"
+      },
+      "green": {
+        "description": "Implement open_file_diff that loads base version into temp buffer, sets diffthis on both",
+        "status": "not_started"
+      },
+      "refactor": {
+        "description": "",
+        "status": "not_started"
+      },
+      "completed": false
+    },
+    {
+      "index": 5,
+      "name": "Navigation keymaps for files and hunks",
+      "red": {
+        "description": "Test ]f/[f cycle through sidebar entries, ]h/[h use gitsigns nav",
+        "status": "not_started"
+      },
+      "green": {
+        "description": "Implement file cycling with autocmds, hunk nav delegates to gitsigns",
+        "status": "not_started"
+      },
+      "refactor": {
+        "description": "",
+        "status": "not_started"
+      },
+      "completed": false
+    },
+    {
+      "index": 6,
+      "name": "Review comment integration (source line mapping)",
+      "red": {
+        "description": "Verify review.add() receives correct original source line numbers in diff mode",
+        "status": "not_started"
+      },
+      "green": {
+        "description": "Implement diff buffer line → source line mapping, wrap review.add()",
+        "status": "not_started"
+      },
+      "refactor": {
+        "description": "",
+        "status": "not_started"
+      },
+      "completed": false
+    },
+    {
+      "index": 7,
+      "name": "wpi TUI integration",
+      "red": {
+        "description": "Update wpi TUI review stage to call wt_review instead of git_diff_review",
+        "status": "not_started"
+      },
+      "green": {
+        "description": "Replace git_diff_review.open() with wt_review.open(), set WPI_BASE_REF",
+        "status": "not_started"
+      },
+      "refactor": {
+        "description": "",
+        "status": "not_started"
+      },
+      "completed": false
+    },
+    {
+      "index": 8,
+      "name": "Integration end-to-end",
+      "red": {
+        "description": "Run :WtReview in a worktree with actual changes, verify sidebar + diff + comments",
+        "status": "not_started"
+      },
+      "green": {
+        "description": "Fix any remaining bugs from manual test",
+        "status": "not_started"
+      },
+      "refactor": {
+        "description": "",
+        "status": "not_started"
+      },
+      "completed": false
+    }
+  ],
+  "notes": [],
+  "design": {
+    "currentState": "The wpi TUI has a review step that opens nvim with git_diff_review.open(mergeBase). git_diff_review uses quickfix + gitsigns hunks for navigation across files. review/init.lua provides extmark-based comment annotations that save to .code-review.md. There's no file sidebar, no proper side-by-side diff mode for review, and review comments don't work in diff buffers because line numbers don't map. No Lua test directory exists.",
+    "desiredState": "A :WtReview [branch?] command that opens a file sidebar showing changed files with diff stats (+N/-M). Selecting a file opens it in side-by-side diff mode (working tree vs base). Navigating with ]f/[f for files and ]h/[h for hunks. Comments via the review system map to actual source line numbers. wt CLI used for branch detection.",
+    "patterns": "git_diff_review exists with quickfix-based review. review/init.lua uses extmarks and .code-review.md. wpi TUI sets WPI_BASE_REF and launches nvim with git_diff_review. wt config state default-branch gives the base branch.",
+    "decisions": "Use side-by-side diff of actual source files (not unified diff). Reuse review/init.lua comment system. Use pure Neovim diff rendering. Hybrid navigation: sidebar for files + ]h/[h for hunks. Auto-detect branch via wt CLI, allow override argument. New files show in sidebar as normal buffers.",
+    "questions": "Should we evolve git_diff_review or create new wt_review module? How to test Neovim UI plugin — no existing Lua test directory. Do we need plenary.nvim test setup?"
+  }
+}
