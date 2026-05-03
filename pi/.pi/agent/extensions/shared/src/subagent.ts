@@ -75,6 +75,18 @@ interface SdkTurnEndMessage {
   };
 }
 
+/** Info about a tool call passed to the onToolCall callback. */
+export interface ToolCallInfo {
+  /** Name of the tool that was called. */
+  toolName: string;
+  /** Human-readable summary of the arguments (truncated to ~100 chars). */
+  argsSummary: string;
+  /** Wall-clock duration of the tool call in milliseconds (from start to completion). */
+  durationMs: number;
+  /** Whether the tool call completed without error (from tool_execution_end.isError). */
+  success: boolean;
+}
+
 /** Options for {@link runSubagent}. */
 export interface RunSubagentOptions {
   /** Working directory for the subagent */
@@ -103,6 +115,13 @@ export interface RunSubagentOptions {
    * assistant text or starts a new tool call.
    */
   onUpdate?: (update: { text: string; recentCalls?: string[] }) => void;
+  /**
+   * Callback for each tool call executed by the subagent.
+   * Fires at tool_execution_end with accurate wall-clock duration and
+   * per-call success status (from isError). Safe to throw in — the
+   * callback is wrapped in try/catch and errors are swallowed.
+   */
+  onToolCall?: (info: ToolCallInfo) => void;
   /** Enable loop detection for tool calls (default: false) */
   loopDetection?: boolean;
   /** Maximum number of tool calls before stopping (default: Infinity) */
@@ -235,6 +254,7 @@ async function runSingleAttempt(
     timeoutMs = DEFAULT_TIMEOUT_MS,
     signal,
     onUpdate,
+    onToolCall,
     loopDetection = false,
     maxToolCalls = Infinity,
     debugLabel,
@@ -283,6 +303,11 @@ async function runSingleAttempt(
 
   try {
     const toolHistory: Array<{ name: string; argsSignature: string }> = [];
+    const pendingToolCalls: Array<{
+      toolName: string;
+      argsSummary: string;
+      startTime: number;
+    }> = [];
 
     // Set up event subscription
     const unsubscribe = session.subscribe((event: AgentSessionEvent) => {
@@ -302,6 +327,21 @@ async function runSingleAttempt(
         recentCalls.push(callLine);
         if (recentCalls.length > RECENT_CALLS_WINDOW) recentCalls.shift();
         emitUpdate();
+
+        // Track timing for onToolCall callback
+        if (onToolCall) {
+          let argsSummary = callLine;
+          // Safe UTF-8 truncation: iterate over code points, not UTF-16 code units
+          const codePoints = [...argsSummary];
+          if (codePoints.length > 100) {
+            argsSummary = codePoints.slice(0, 97).join("") + "...";
+          }
+          pendingToolCalls.push({
+            toolName: event.toolName,
+            argsSummary,
+            startTime: Date.now(),
+          });
+        }
 
         // Budget limit with grace period
         if (toolHistory.length > maxToolCalls + TOOL_CALL_GRACE_BUFFER) {
@@ -343,6 +383,23 @@ async function runSingleAttempt(
               void session.abort();
               return;
             }
+          }
+        }
+      }
+
+      // Handle tool_execution_end — fire onToolCall with accurate per-tool timing
+      if (event.type === "tool_execution_end") {
+        if (onToolCall && pendingToolCalls.length > 0) {
+          const pending = pendingToolCalls.shift()!;
+          try {
+            onToolCall({
+              toolName: event.toolName,
+              argsSummary: pending.argsSummary,
+              durationMs: Date.now() - pending.startTime,
+              success: !event.isError,
+            });
+          } catch {
+            // Best-effort: swallow errors from onToolCall to avoid crashing the subagent
           }
         }
       }
@@ -441,6 +498,24 @@ async function runSingleAttempt(
     unsubscribe();
     if (abortHandler && signal) {
       signal.removeEventListener("abort", abortHandler);
+    }
+
+    // Flush remaining pending tool calls on early exit (abort/timeout/budget)
+    if (onToolCall && pendingToolCalls.length > 0) {
+      const now = Date.now();
+      for (const pending of pendingToolCalls) {
+        try {
+          onToolCall({
+            toolName: pending.toolName,
+            argsSummary: pending.argsSummary,
+            durationMs: now - pending.startTime,
+            success: false,
+          });
+        } catch {
+          // Best-effort
+        }
+      }
+      pendingToolCalls.length = 0;
     }
 
     if (aborted) {

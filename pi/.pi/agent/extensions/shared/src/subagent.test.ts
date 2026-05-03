@@ -87,11 +87,14 @@ interface MockSessionConfig {
   errorMessage?: string;
   /** Model name to attach to the turn_end event (mirrors SDK behavior). */
   model?: string;
+  /** Tool calls to emit as tool_execution_start/tool_execution_end events. */
+  toolCalls?: Array<{ toolName: string; args: Record<string, unknown>; isError?: boolean }>;
 }
 
 /**
- * Create a mock AgentSession that emits a single `turn_end` event when
- * `prompt()` is called, producing a result described by `config`.
+ * Create a mock AgentSession that emits tool_execution_start events (if
+ * configured) followed by a single `turn_end` event when `prompt()` is
+ * called, producing a result described by `config`.
  */
 function createMockSession(config: MockSessionConfig) {
   const listeners: Array<(event: any) => void> = [];
@@ -105,6 +108,26 @@ function createMockSession(config: MockSessionConfig) {
       };
     },
     prompt: async (_query: string) => {
+      // Emit tool_execution_start + tool_execution_end for each tool call
+      for (const toolCall of config.toolCalls || []) {
+        for (const listener of listeners) {
+          listener({
+            type: "tool_execution_start",
+            toolName: toolCall.toolName,
+            args: toolCall.args,
+          });
+        }
+        for (const listener of listeners) {
+          listener({
+            type: "tool_execution_end",
+            toolName: toolCall.toolName,
+            toolCallId: "mock-call-id",
+            result: null,
+            isError: toolCall.isError ?? false,
+          });
+        }
+      }
+      // Emit turn_end
       for (const listener of listeners) {
         listener({
           type: "turn_end",
@@ -440,5 +463,97 @@ describe("runSubagent retry logic", () => {
 
     // Session should be created only once and reused for the retry
     expect(sessionCount).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// onToolCall callback tests
+// ---------------------------------------------------------------------------
+
+describe("onToolCall callback", () => {
+  it("calls onToolCall with toolName, argsSummary, durationMs, success for each tool call", async () => {
+    const calls: Array<{
+      toolName: string;
+      argsSummary: string;
+      durationMs: number;
+      success: boolean;
+    }> = [];
+
+    const session = createMockSession({
+      output: "search complete",
+      toolCalls: [
+        { toolName: "read", args: { path: "test.ts" } },
+        { toolName: "grep", args: { pattern: "function" } },
+      ],
+    });
+
+    await runSubagent(
+      baseOptions({
+        createSession: async () => session,
+        onToolCall: (info) => calls.push(info),
+      }),
+    );
+
+    expect(calls.length).toBe(2);
+
+    // First call: read
+    expect(calls[0].toolName).toBe("read");
+    expect(calls[0].argsSummary).toContain("test.ts");
+    expect(typeof calls[0].durationMs).toBe("number");
+    expect(calls[0].durationMs).toBeGreaterThanOrEqual(0);
+    expect(calls[0].success).toBe(true);
+
+    // Second call: grep
+    expect(calls[1].toolName).toBe("grep");
+    expect(calls[1].argsSummary).toContain("function");
+    expect(typeof calls[1].durationMs).toBe("number");
+    expect(calls[1].durationMs).toBeGreaterThanOrEqual(0);
+    expect(calls[1].success).toBe(true);
+  });
+
+  it("reports success=false when tool_execution_end.isError is true", async () => {
+    const calls: Array<{
+      toolName: string;
+      argsSummary: string;
+      durationMs: number;
+      success: boolean;
+    }> = [];
+
+    const session = createMockSession({
+      toolCalls: [{ toolName: "bash", args: { command: "invalid" }, isError: true }],
+    });
+
+    await runSubagent(
+      baseOptions({
+        createSession: async () => session,
+        onToolCall: (info) => calls.push(info),
+      }),
+    );
+
+    expect(calls.length).toBe(1);
+    expect(calls[0].toolName).toBe("bash");
+    expect(calls[0].success).toBe(false);
+  });
+
+  it("does not call onToolCall when no tool calls occur", async () => {
+    const calls: Array<{
+      toolName: string;
+      argsSummary: string;
+      durationMs: number;
+      success: boolean;
+    }> = [];
+
+    const session = createMockSession({
+      output: "direct response",
+    });
+
+    await runSubagent(
+      baseOptions({
+        createSession: async () => session,
+        onToolCall: (info) => calls.push(info),
+      }),
+    );
+
+    expect(calls.length).toBe(0);
   });
 });

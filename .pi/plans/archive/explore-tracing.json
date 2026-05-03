@@ -1,0 +1,120 @@
+{
+  "title": "OpenTelemetry Tracing for Explore Subagent",
+  "slug": "explore-tracing",
+  "context": "Using @langfuse/tracing SDK directly — no custom OTLP exporter needed. Verified working in Bun. API: startObservation(name, {input, metadata}) for spans, .startObservation() for children, .update({output, metadata}) for updates, .end() to close. One-time setup: NodeSDK + LangfuseSpanProcessor. No-op when env vars missing (SDK warns but doesnt throw).",
+  "architecture": "shared/src/tracing.ts: initTracing() singleton, startExploreTrace() helper. Uses @langfuse/tracing + @langfuse/otel + @opentelemetry/sdk-node. No custom exporter. Env vars: LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_HOST. Best-effort: SDK handles graceful degradation internally.",
+  "created": "2026-05-03T15:01:45.202Z",
+  "updated": "2026-05-03T15:49:34.717Z",
+  "steps": [
+    {
+      "index": 1,
+      "name": "Tracing init module (singleton SDK setup)",
+      "red": {
+        "description": "Write test that initTracing() returns a singleton tracer. Test that without LANGFUSE env vars it returns a no-op tracer (startObservation returns no-op spans that dont throw). Test that with env vars it returns a real tracer. Test that repeated calls return same instance.",
+        "status": "done"
+      },
+      "green": {
+        "description": "Create shared/src/tracing.ts. Initialize NodeSDK with LangfuseSpanProcessor lazily from env vars (LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_HOST). Export initTracing() that returns { startObservation } bound to the initialized SDK. Without env vars, export no-op stubs. Add deps: @langfuse/tracing, @langfuse/otel, @opentelemetry/sdk-node to shared/package.json.",
+        "status": "done"
+      },
+      "refactor": {
+        "description": "",
+        "status": "skipped"
+      },
+      "completed": true
+    },
+    {
+      "index": 2,
+      "name": "startExploreTrace helper",
+      "red": {
+        "description": "Write test for startExploreTrace(query, cwd, model) that creates a root observation named \"explore\" with input { query }, metadata { cwd, model, branch }. Test that branch is resolved from git (mock spawnSync). Test that it returns the observation object and a child helper.",
+        "status": "done"
+      },
+      "green": {
+        "description": "Implement startExploreTrace in shared/src/tracing.ts. Gets branch via git rev-parse --abbrev-ref HEAD (cached at module level). Returns the Langfuse observation and a helper for creating children.",
+        "status": "done"
+      },
+      "refactor": {
+        "description": "",
+        "status": "skipped"
+      },
+      "completed": true
+    },
+    {
+      "index": 3,
+      "name": "onToolCall callback in runSubagent",
+      "red": {
+        "description": "Write test that when onToolCall is provided in RunSubagentOptions, it gets called with { toolName, argsSummary, durationMs, success } for each tool call. Verify argsSummary is truncated to 100 chars. Verify duration is a number. Use existing subagent.test.ts patterns with mock session.",
+        "status": "done"
+      },
+      "green": {
+        "description": "Add optional onToolCall to RunSubagentOptions. In the tool_execution_start handler, record start time and toolName. In turn_end handler, calculate duration and invoke onToolCall with the summary.",
+        "status": "done"
+      },
+      "refactor": {
+        "description": "",
+        "status": "skipped"
+      },
+      "completed": true
+    },
+    {
+      "index": 4,
+      "name": "Instrument explore execute()",
+      "red": {
+        "description": "Write test that mocks tracing init and verifies explore execute() creates: (1) root \"explore\" span with query/cwd/model/branch, (2) child spans for pre-search sub-steps (query-planning, index-build, heuristic-search, rerank), (3) child spans for each subagent tool call via onToolCall. Focus test on the wiring, not the Langfuse SDK internals.",
+        "status": "done"
+      },
+      "green": {
+        "description": "Wire tracing into explore/index.ts execute(): (1) Call startExploreTrace at top, (2) wrap each pre-search step in child observations, (3) pass onToolCall to runSubagent that creates child spans with toolName/argsSummary/duration, (4) set output on root span with usage stats, (5) end root span.",
+        "status": "done"
+      },
+      "refactor": {
+        "description": "Extract repeated child-span-creation into a helper function.",
+        "status": "skipped"
+      },
+      "completed": true
+    },
+    {
+      "index": 5,
+      "name": "Export tracing from @pi-ext/shared",
+      "red": {
+        "description": "Write test that imports { initTracing, startExploreTrace } from \"@pi-ext/shared\" and verifies they are functions.",
+        "status": "done"
+      },
+      "green": {
+        "description": "Add exports to shared/src/index.ts. No package.json changes needed since shared exports \"./src/index.ts\".",
+        "status": "done"
+      },
+      "refactor": {
+        "description": "",
+        "status": "skipped"
+      },
+      "completed": true
+    },
+    {
+      "index": 6,
+      "name": "Typecheck and full test suite",
+      "red": {
+        "description": "Run npx tsc --noEmit on shared and explore. Run bun test --parallel from extensions root. Any failures are the RED condition.",
+        "status": "done"
+      },
+      "green": {
+        "description": "Fix any type errors or test failures.",
+        "status": "done"
+      },
+      "refactor": {
+        "description": "Clean up any temporary types or casts.",
+        "status": "skipped"
+      },
+      "completed": true
+    }
+  ],
+  "notes": [],
+  "design": {
+    "currentState": "No tracing exists in @pi-ext/shared or explore extension. The shared module exports runSubagent which has event subscriptions (tool_execution_start, turn_end) but no instrumentation. Explore extension has pre-search pipeline (query-planner → file-index → heuristic-search → rerank) with timing data in PreSearchStats but no spans. No OpenTelemetry dependencies installed anywhere.",
+    "desiredState": "A shared tracing module (@pi-ext/shared/src/tracing.ts) that: (1) initializes an OpenTelemetry TracerProvider with OTLP HTTP exporter targeting Langfuse, (2) exports a tracer factory and span helpers, (3) degrades gracefully when env vars are missing (no-op tracer). The explore extension wraps pre-search sub-steps in child spans and passes a tracing callback to runSubagent that creates per-tool-call spans. Session-scoped attributes (branch, cwd, model) on root span. Minimal attributes on tool call spans: toolName, argsSummary (truncated to ~100 chars), duration, success.",
+    "patterns": "Existing patterns: (1) runSubagent accepts options object with callbacks (onUpdate, loopDetection). Adding onToolCall tracing callback follows same pattern. (2) Pre-search already tracks timing via Date.now() — replace with spans. (3) Extensions import from @pi-ext/shared — new tracing exports go through src/index.ts. (4) Test pattern: co-located *.test.ts files, bun test, mock.module() for external deps. (5) Package structure: workspace deps, exports map in package.json.",
+    "decisions": "No parent linking (root traces only). Env var config (LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_HOST). Best-effort (swallow errors). Minimal tool call attributes. Shared module so librarian can reuse. OTLP HTTP (not gRPC) — simpler, no collector needed.",
+    "questions": "(1) Should the tracer be a singleton (module-level) or created per call? Singleton is simpler but needs lazy init. (2) Should we use @opentelemetry/sdk-node or individual packages (@opentelemetry/sdk-trace-node + @opentelemetry/exporter-trace-otlp-http)? (3) Bun compatibility — does the OTLP HTTP exporter work in Bun's runtime or do we need fetch-based custom exporter?"
+  }
+}
