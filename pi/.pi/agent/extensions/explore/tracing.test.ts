@@ -166,9 +166,7 @@ describe("explore tracing integration", () => {
     expect(toolSpanArg).toBeDefined();
 
     // The returned span should have been ended
-    const toolSpanResult = mockChild.mock.results.find(
-      (r: any) => r.value && r.value.end,
-    );
+    const toolSpanResult = mockChild.mock.results.find((r: any) => r.value && r.value.end);
     expect(toolSpanResult).toBeDefined();
     expect(toolSpanResult.value.end).toHaveBeenCalledTimes(1);
   });
