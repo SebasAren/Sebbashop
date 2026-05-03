@@ -53,10 +53,15 @@ vim.api.nvim_create_autocmd("LspAttach", {
   end,
 })
 
--- Git diff review command
+-- WtReview command (replaces GitDiffReview)
+vim.api.nvim_create_user_command("WtReview", function(opts)
+  require("wt_review").open(opts.args ~= "" and opts.args or nil)
+end, { nargs = "?", desc = "Open worktree diff review with sidebar" })
+
+-- Backward-compatible alias
 vim.api.nvim_create_user_command("GitDiffReview", function(opts)
-  require("git_diff_review").open(opts.args ~= "" and opts.args or nil)
-end, { nargs = "?", desc = "Open diff review session" })
+  require("wt_review").open(opts.args ~= "" and opts.args or nil)
+end, { nargs = "?", desc = "Open diff review session (alias for WtReview)" })
 
 -- Code review keymaps
 vim.keymap.set("n", "<leader>ra", function()

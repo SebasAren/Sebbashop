@@ -4,143 +4,143 @@
   "context": "Build a Neovim plugin for reviewing worktree diffs with a file sidebar, side-by-side diff mode, and integration with the existing review/init.lua comment system.",
   "architecture": "New wt_review.lua module that integrates with git_diff_review, review/init.lua, and wt CLI",
   "created": "2026-05-03T11:12:20.114Z",
-  "updated": "2026-05-03T11:16:59.910Z",
+  "updated": "2026-05-03T12:03:28.435Z",
   "steps": [
     {
       "index": 1,
       "name": "Module skeleton + resolve_base_ref",
       "red": {
         "description": "Create tests/wt_review_spec.lua that fails because require('wt_review') is missing and resolve_base_ref returns wrong value",
-        "status": "in_progress"
+        "status": "done"
       },
       "green": {
         "description": "Create lua/wt_review/init.lua with module skeleton, resolve_base_ref using wt CLI + merge-base",
-        "status": "not_started"
+        "status": "done"
       },
       "refactor": {
         "description": "",
-        "status": "not_started"
+        "status": "skipped"
       },
-      "completed": false
+      "completed": true
     },
     {
       "index": 2,
       "name": "get_changed_files with diff stats",
       "red": {
         "description": "Test that get_changed_files returns sorted list with +N/-M stats",
-        "status": "not_started"
+        "status": "done"
       },
       "green": {
         "description": "Implement get_changed_files using git diff --numstat, merge untracked files",
-        "status": "not_started"
+        "status": "done"
       },
       "refactor": {
         "description": "",
-        "status": "not_started"
+        "status": "skipped"
       },
-      "completed": false
+      "completed": true
     },
     {
       "index": 3,
       "name": "Sidebar buffer creation and rendering",
       "red": {
         "description": "Test that open_sidebar creates a buffer with correct file list and highlights",
-        "status": "not_started"
+        "status": "done"
       },
       "green": {
         "description": "Implement sidebar buffer with 'wtreview' filetype, render files with +N/-M stats",
-        "status": "not_started"
+        "status": "done"
       },
       "refactor": {
         "description": "",
-        "status": "not_started"
+        "status": "skipped"
       },
-      "completed": false
+      "completed": true
     },
     {
       "index": 4,
       "name": "Diff buffer setup for a selected file",
       "red": {
         "description": "Verify diff mode opens two buffers (working tree vs base version) with correct content",
-        "status": "not_started"
+        "status": "done"
       },
       "green": {
         "description": "Implement open_file_diff that loads base version into temp buffer, sets diffthis on both",
-        "status": "not_started"
+        "status": "done"
       },
       "refactor": {
         "description": "",
-        "status": "not_started"
+        "status": "skipped"
       },
-      "completed": false
+      "completed": true
     },
     {
       "index": 5,
       "name": "Navigation keymaps for files and hunks",
       "red": {
         "description": "Test ]f/[f cycle through sidebar entries, ]h/[h use gitsigns nav",
-        "status": "not_started"
+        "status": "done"
       },
       "green": {
         "description": "Implement file cycling with autocmds, hunk nav delegates to gitsigns",
-        "status": "not_started"
+        "status": "done"
       },
       "refactor": {
         "description": "",
-        "status": "not_started"
+        "status": "skipped"
       },
-      "completed": false
+      "completed": true
     },
     {
       "index": 6,
       "name": "Review comment integration (source line mapping)",
       "red": {
         "description": "Verify review.add() receives correct original source line numbers in diff mode",
-        "status": "not_started"
+        "status": "done"
       },
       "green": {
         "description": "Implement diff buffer line → source line mapping, wrap review.add()",
-        "status": "not_started"
+        "status": "done"
       },
       "refactor": {
         "description": "",
-        "status": "not_started"
+        "status": "skipped"
       },
-      "completed": false
+      "completed": true
     },
     {
       "index": 7,
       "name": "wpi TUI integration",
       "red": {
         "description": "Update wpi TUI review stage to call wt_review instead of git_diff_review",
-        "status": "not_started"
+        "status": "done"
       },
       "green": {
         "description": "Replace git_diff_review.open() with wt_review.open(), set WPI_BASE_REF",
-        "status": "not_started"
+        "status": "done"
       },
       "refactor": {
         "description": "",
-        "status": "not_started"
+        "status": "skipped"
       },
-      "completed": false
+      "completed": true
     },
     {
       "index": 8,
       "name": "Integration end-to-end",
       "red": {
         "description": "Run :WtReview in a worktree with actual changes, verify sidebar + diff + comments",
-        "status": "not_started"
+        "status": "done"
       },
       "green": {
         "description": "Fix any remaining bugs from manual test",
-        "status": "not_started"
+        "status": "done"
       },
       "refactor": {
         "description": "",
-        "status": "not_started"
+        "status": "skipped"
       },
-      "completed": false
+      "completed": true
     }
   ],
   "notes": [],

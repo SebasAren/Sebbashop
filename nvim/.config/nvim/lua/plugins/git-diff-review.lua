@@ -1,5 +1,5 @@
--- Plugin spec for git_diff_review module
--- Provides <leader>gD keymap to open the diff review session
+-- Plugin spec for wt_review module
+-- Provides <leader>gD keymap to open the wt_review session
 return {
   {
     "ibhagwan/fzf-lua",
@@ -8,9 +8,9 @@ return {
       {
         "<leader>gD",
         function()
-          require("git_diff_review").open()
+          require("wt_review").open()
         end,
-        desc = "Git diff review (all files)",
+        desc = "Worktree diff review (side-by-side)",
       },
     },
   },

@@ -272,7 +272,7 @@ selectList.onSelect = (item) => {
         tui,
         handle,
         "nvim",
-        ["-c", `lua require('git_diff_review').open('${mergeBase}')`],
+        ["-c", `lua require('wt_review').open('${mergeBase}')`],
         { WPI_BASE_REF: mergeBase },
       );
 
