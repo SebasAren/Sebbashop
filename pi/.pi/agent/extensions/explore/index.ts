@@ -216,10 +216,11 @@ export default function (pi: ExtensionAPI) {
               }
             : undefined,
           onToolCall: (info) => {
-            child(info.toolName, {
+            const toolSpan = child(info.toolName, {
               input: { argsSummary: info.argsSummary },
               metadata: { success: info.success, durationMs: info.durationMs },
             });
+            toolSpan.end();
           },
           loopDetection: true,
           maxToolCalls,

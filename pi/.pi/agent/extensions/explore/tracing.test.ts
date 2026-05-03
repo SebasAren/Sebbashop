@@ -164,6 +164,13 @@ describe("explore tracing integration", () => {
     const newCalls = mockChild.mock.calls.slice(toolCallChildCount);
     const toolSpanArg = newCalls.find((c: any) => c[0] === "read");
     expect(toolSpanArg).toBeDefined();
+
+    // The returned span should have been ended
+    const toolSpanResult = mockChild.mock.results.find(
+      (r: any) => r.value && r.value.end,
+    );
+    expect(toolSpanResult).toBeDefined();
+    expect(toolSpanResult.value.end).toHaveBeenCalledTimes(1);
   });
 
   it("sets output on the root observation and ends it", async () => {
