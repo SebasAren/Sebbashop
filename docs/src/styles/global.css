@@ -94,6 +94,40 @@ body {
   text-decoration: underline;
 }
 
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.stat strong {
+  color: var(--accent-dim);
+  font-weight: 600;
+}
+
+.stat-sep {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+@media (max-width: 640px) {
+  .stats {
+    gap: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+  }
+}
+
 .terminal {
   background: var(--bg-terminal);
   border: 1px solid var(--border);
@@ -422,87 +456,6 @@ body {
   padding: 0.15rem 0.4rem;
   border-radius: 3px;
   font-size: 0.85em;
-}
-
-/* Review */
-.review {
-  max-width: var(--max-width);
-  margin: 0 auto 6rem;
-}
-
-.review h2 {
-  font-size: 1.8rem;
-  margin-bottom: 0.25rem;
-}
-
-.review-byline {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  margin-bottom: 2.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.review-label {
-  color: var(--text-muted);
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.reviewer-name {
-  color: var(--accent);
-  font-size: 1.1rem;
-  font-weight: 700;
-}
-
-.review-verdict {
-  background: var(--bg-card);
-  border-left: 3px solid var(--accent);
-  padding: 1rem 1.25rem;
-  border-radius: 0 6px 6px 0;
-  margin-bottom: 2rem;
-}
-
-.review-verdict p {
-  color: var(--text);
-  font-size: 0.95rem;
-  margin-bottom: 0;
-}
-
-.review-verdict em {
-  color: var(--accent);
-  font-style: normal;
-}
-
-.review h3 {
-  font-size: 1.15rem;
-  color: var(--accent);
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-}
-
-.review h3:first-of-type {
-  margin-top: 0;
-}
-
-.review p {
-  color: var(--text-muted);
-  margin-bottom: 1rem;
-  line-height: 1.7;
-}
-
-.review p strong {
-  color: var(--text);
-}
-
-.review code {
-  background: var(--bg-terminal);
-  padding: 0.15rem 0.4rem;
-  border-radius: 3px;
-  font-size: 0.85em;
-  color: var(--accent-dim);
 }
 
 /* Postscript */

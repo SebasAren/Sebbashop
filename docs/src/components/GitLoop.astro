@@ -39,15 +39,18 @@ import ArrowSvg from "./ArrowSvg.astro";
       <span class="step-number">3</span>
       <h3>Review</h3>
       <p>
-        The human reviews the worktree diff. If it passes, <code>wt
-        step merge</code> brings it home. If not, the worktree is
-        discarded — no cleanup, no stray branches.
+        The human reviews the worktree diff. The <code>wt-review</code>
+        Neovim plugin provides a dedicated side-by-side diff view with
+        a sidebar for quick file navigation — no context-switching
+        required. If the diff passes, <code>wt step merge</code> brings
+        it home. If not, the worktree is discarded — no cleanup, no
+        stray branches.
       </p>
     </div>
   </div>
 
   <TerminalPrompt
-    command="wt step review"
-    output={"On step review of pi/extension-panel\n\n  Changes since step start:\n    pi/.pi/agent/extensions/panel.ts   +142\n    pi/.pi/agent/extensions/panel.test.ts  +98\n\n  ✓ All tests passing\n  ✓ Conventional commit: feat(pi): add extension panel with TUI integration\n\n→ Ready to merge."}
+    command="nvim -c 'WtReview'"
+    output={"┌─ Worktree Review ──────────────────────────┐\n│  changes from feat/wt-review                │\n│                                            │\n│  Files:                                    │\n│  ● lua/wt_review/init.lua        +186   -0 │\n│  ○ lua/wt_review/render.lua      +142   -0 │\n│  ○ lua/wt_review/navigation.lua  + 98   -0 │\n│  ● tests/wt_review.test.lua      +210   -0 │\n│                                            │\n│  [Enter] open diff   [d] mark done         │\n└────────────────────────────────────────────┘"}
   />
 </section>

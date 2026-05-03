@@ -25,6 +25,11 @@ const intros: Record<string, { title: string; description: string }> = {
     description:
       "A full-featured Neovim config with Lazy.nvim, 17 LSP servers, AI-assisted completion via Codestral, and integrated formatting/linting. The primary editor for all development work.",
   },
+  "kitty/readme": {
+    title: "Kitty Terminal",
+    description:
+      "GPU-accelerated terminal replacing tmux + Ghostty. Native multiplexing with tabs and splits, and first-class support for the Kitty Graphics Protocol — enabling pi inline images without passthrough hacks.",
+  },
 };
 
 const displayOrder = [
@@ -32,6 +37,7 @@ const displayOrder = [
   "pi/pi/readme",
   "obsidian/agents",
   "nvim/readme",
+  "kitty/readme",
 ];
 
 const sorted = displayOrder
